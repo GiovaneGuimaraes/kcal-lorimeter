@@ -76,9 +76,10 @@
 - **Origem**: orquestrador
 - **Bloqueia**: T-009 (e, por consequência, todo o lançamento por voz)
 - **Pergunta**: opções: (a) **API de transcrição hospedada** (família Whisper — OpenAI, Groq —
-  ou Deepgram): boa em pt-BR, custo por minuto, exige chave; (b) **Web Speech API do navegador**:
-  grátis, sem servidor, mas suporte e qualidade variam por navegador e não há áudio para
-  reprocessar; (c) **Whisper rodando por conta própria**: sem custo por uso, mas exige servidor com
+  ou Deepgram): boa em pt-BR, custo por minuto, exige chave (fica no servidor, nunca no app);
+  (b) **reconhecimento de voz do próprio aparelho** (iOS/Android, via biblioteca de terceiros no
+  Expo): grátis, sem servidor, mas a qualidade varia por aparelho, exige development build (não
+  roda no Expo Go) e não há áudio para reprocessar; (c) **Whisper rodando por conta própria**: sem custo por uso, mas exige servidor com
   GPU/CPU forte.
 - **Recomendação**: (a), atrás de uma interface `transcribe()` para poder trocar de provedor sem
   mexer no resto. Os áudios são curtos (10–30 s), então o custo por pessoa/mês tende a ser baixo —
@@ -86,20 +87,34 @@
   transcrição (guarda-se só o texto)? Recomendo que sim.
 - **Resposta do humano**: _(preencher)_
 
-### [2026-11-08] H-001 — Plataforma e stack do app
-- **Origem**: orquestrador
+### [2026-11-08] H-007 — Contas para distribuir o app (Expo, Apple, Google)
+- **Origem**: orquestrador (consequência da H-001)
+- **Bloqueia**: T-016 (build para instalar no aparelho). **Não** bloqueia o desenvolvimento: dá
+  para programar e testar com Expo Go e simulador sem nenhuma dessas contas.
+- **Pergunta**: (1) criar uma conta Expo (grátis) para o EAS Build; (2) **Apple Developer
+  Program** (pago, anual) — necessário para instalar build no iPhone fora do Expo Go e para
+  publicar na App Store; (3) **Google Play Console** (taxa única) — só para publicar na Play Store;
+  build Android interno (`.apk`) não precisa. Qual plataforma vem primeiro: iOS, Android ou as duas?
+- **Recomendação**: começar pela plataforma do seu celular, só com a conta Expo e build interno;
+  pagar loja só quando for abrir para outras pessoas. Confira os valores atuais nos sites.
+- **Resposta do humano**: _(preencher)_
+
+### [2026-11-08] H-001b — Back-end: monorepo pnpm + TypeScript igual ao vetor-wallet?
+- **Origem**: orquestrador (o que sobrou da H-001)
 - **Bloqueia**: T-001 (e, por consequência, toda a implementação)
-- **Pergunta**: onde a pessoa grava o áudio? (a) **PWA web** (Vite + React; abre no navegador
-  do celular, grava com `MediaRecorder`, pode ser "instalada" na tela inicial, sem loja de app);
-  (b) **app nativo** com React Native/Expo (gravação mais robusta em segundo plano, notificações,
-  mas exige build e publicação nas lojas); (c) **bot de WhatsApp/Telegram** (zero interface para
-  construir no começo; o áudio já é o jeito natural de mandar mensagem).
-  Back-end: monorepo pnpm + TypeScript + API REST + `*-core`, igual ao vetor-wallet?
-- **Recomendação**: **(a) PWA** + o mesmo desenho de monorepo do vetor-wallet (proposto em
-  `CLAUDE.md`). É o caminho mais curto até um MVP usável no celular, e os cores ficam reaproveitáveis
-  se um dia vier app nativo ou bot.
+- **Pergunta**: o mobile está decidido (Expo). Falta o resto: monorepo pnpm + TypeScript strict,
+  `rest-api` fina + `*-core` de domínio + integrações separadas, como em `CLAUDE.md` § Stack? Ou
+  outro desenho (ex.: back-end serverless direto no provedor do banco)?
+- **Recomendação**: o mesmo desenho do vetor-wallet, com o app Expo como mais um package
+  (`packages/mobile`). Os cores ficam reaproveitáveis se um dia vier versão web ou bot.
 - **Resposta do humano**: _(preencher)_
 
 ## Resolvidos
 
-_(vazio)_
+### [2026-11-08] H-001 — Plataforma do app
+- **Origem**: orquestrador
+- **Pergunta**: onde a pessoa grava o áudio: PWA web, app nativo (React Native/Expo) ou bot de
+  WhatsApp/Telegram?
+- **Resposta do humano (2026-11-08)**: usar **[Expo](https://expo.dev/)** para a estrutura mobile.
+  Aplicado em `CLAUDE.md` § Stack (`packages/mobile`, Expo Router, `expo-audio`, EAS). A parte de
+  back-end virou a H-001b; as contas de distribuição, a H-007.

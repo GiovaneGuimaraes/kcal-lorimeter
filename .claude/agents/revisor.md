@@ -23,7 +23,8 @@ está pronto para virar PR.
    - **Corretude**: casos de borda (0 g, alimento sem porção, quantidade em unidade sem peso,
      alimento de outra pessoa, transcrição vazia, JSON do LLM malformado), regressões.
    - **Regras do `CLAUDE.md`**: nenhum valor nutricional vindo de LLM; isolamento por `user_id` em
-     toda leitura/escrita; snapshot de macros no lançamento; segredos fora do repo; nenhum dado
+     toda leitura/escrita; snapshot de macros no lançamento; segredos fora do repo e **fora do
+     app Expo** (nada de chave em `EXPO_PUBLIC_*` nem no bundle); nenhum dado
      sensível real em teste, commit ou fixture; texto de UI em pt-BR.
    - **Política de testes**: mudança de comportamento sem teste e sem justificativa = reprovação.
    - **Escopo**: mudança fora do escopo é achado (não corrija você mesmo).

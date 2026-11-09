@@ -8,18 +8,29 @@ trabalho é feito: [`docs/multi-agent/README.md`](docs/multi-agent/README.md).
 ## Estado
 
 **Fase 0 — só documentação.** Não existe código, `package.json`, CI nem comandos. A stack está
-proposta abaixo, mas **pendente de confirmação** em `docs/multi-agent/TODO-HUMAN.md` (H-001 a
-H-006). Nenhum executor cria código antes de essas respostas existirem. Quando o scaffold (T-001)
+parcialmente decidida (mobile em Expo); o resto está **pendente de confirmação** em
+`docs/multi-agent/TODO-HUMAN.md`. Nenhum executor cria código antes de essas respostas existirem. Quando o scaffold (T-001)
 entrar, esta seção passa a listar os comandos reais (`build`, `lint`, `test`) e deixa de dizer
 "proposta".
 
-## Stack proposta (aguardando H-001)
+## Stack
 
-Seguindo o que já funciona nos outros projetos do humano:
+**Decidido (H-001, 2026-11-08): o app mobile é feito com [Expo](https://expo.dev/)** (React Native,
+iOS e Android).
 
-- **Monorepo pnpm**, TypeScript `strict` em tudo, lockfile único na raiz.
-- `packages/web` — front (Vite + React), **PWA** para gravar áudio no celular via `MediaRecorder`
-  sem passar por loja de app.
+- `packages/mobile` — app Expo: **Expo Router** (navegação por arquivos), **`expo-audio`** para
+  gravar (permissão de microfone no iOS e no Android), testes com `jest-expo` + React Native
+  Testing Library. Builds e distribuição com **EAS Build / EAS Submit**; atualização de JS sem
+  passar pela loja com **EAS Update**. Para desenvolver: Expo Go ou development build.
+  O Expo também gera versão **web** do mesmo código (`react-native-web`), se um dia for útil — não
+  é escopo do MVP.
+
+O restante continua **proposto, aguardando H-001b** (seguindo o que já funciona nos outros projetos
+do humano):
+
+- **Monorepo pnpm**, TypeScript `strict` em tudo, lockfile único na raiz. Expo em monorepo pnpm
+  tem particularidades (configuração do Metro, possivelmente `node-linker=hoisted`): siga o guia
+  oficial de monorepos do Expo na T-001, não suposição.
 - `packages/rest-api` — HTTP fino: autentica, valida entrada, chama os cores e traduz erro em status.
 - `packages/*-core` — lógica de domínio, **uma função por arquivo**, dependência de banco
   **injetada** (`query`), testes fora do `src/`.
@@ -44,6 +55,9 @@ Módulos previstos: `auth`, `foods-core` (base de alimentos + casamento por nome
 - **Dado sensível não entra em arquivo versionado, PR nem commit**: áudio, transcrição ou
   lançamento real de alguém. Teste usa dado inventado.
 - Texto de interface em **pt-BR**.
+- **Mobile**: segredo (chave de STT/LLM) **nunca** vai no bundle do app — tudo que estiver no app
+  Expo, inclusive variável `EXPO_PUBLIC_*`, é público. O app fala só com a nossa API; quem chama
+  STT e LLM é o servidor.
 
 ## Política de testes
 

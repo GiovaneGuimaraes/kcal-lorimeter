@@ -11,6 +11,6 @@
 
 ## Fila
 
-> **Vazia (fase 0).** Toda tarefa de implementação depende da stack (H-001 a H-004 no
-> `TODO-HUMAN.md`). Assim que elas forem respondidas, o orquestrador promove T-001 (scaffold) e
+> **Vazia (fase 0).** Toda tarefa de implementação depende da stack (H-001b a H-004 no
+> `TODO-HUMAN.md`; o mobile já está decidido: Expo). Assim que elas forem respondidas, o orquestrador promove T-001 (scaffold) e
 > T-002 (base de alimentos padrão) do `BACKLOG.md` para cá, com o brief completo.

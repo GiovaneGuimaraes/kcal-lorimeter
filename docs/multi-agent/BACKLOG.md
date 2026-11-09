@@ -14,7 +14,7 @@ Funcionalidades F1–F8 de [`docs/PRODUTO.md`](../PRODUTO.md).
 
 | Id | Item | Complexidade estimada | Falta para ficar pronto |
 |---|---|---|---|
-| T-001 | **Scaffold do monorepo**: pnpm, TS strict, lint + Prettier, test runner, CI no GitHub Actions (`build`, `lint`, `format:check`, `test`), `.env.example` | média | H-001 (stack), H-004 (banco) |
+| T-001 | **Scaffold do monorepo**: pnpm, TS strict, lint + Prettier, test runner, CI no GitHub Actions (`build`, `lint`, `format:check`, `test`), `.env.example`, `packages/mobile` criado com `create-expo-app` (Expo Router) seguindo o guia de monorepos do Expo | média | H-001b (back-end), H-004 (banco) |
 | T-002 | **Base de alimentos padrão** (F3): ~40 alimentos comuns com macros por 100 g, apelidos e a **fonte** de cada valor, como dado de seed versionado | média | H-005 (fonte); formato do seed depende de T-001 |
 | T-003 | **Schema + migrações** (`users`, `daily_goals`, `foods`, `voice_logs`, `meal_entries`) com isolamento por `user_id` | alta | T-001, H-004 |
 | T-004 | **`nutrition-core`**: cálculo de macros por gramas e por porção, soma do dia, arredondamento de exibição — funções puras, 100% testadas | alta | T-001 |
@@ -25,10 +25,11 @@ Funcionalidades F1–F8 de [`docs/PRODUTO.md`](../PRODUTO.md).
 | T-009 | **Integração STT**: interface `transcribe(audio) → texto` + 1 provedor, mockado nos testes | média | H-002 |
 | T-010 | **Integração LLM de extração**: `extract(texto) → [{alimento, quantidade, unidade, refeicao?}]` com saída estruturada validada por schema; recusa valor nutricional | alta | H-003 |
 | T-011 | **`voice-core`** (F5): orquestra STT → extração → casamento → `voice_log` pendente | alta | T-006, T-009, T-010 |
-| T-012 | **Web: gravar áudio** (PWA, `MediaRecorder`, permissões, limite de duração, upload) | alta | T-001, T-011 |
-| T-013 | **Web: tela de revisão** (corrigir item, escolher entre candidatos, cadastrar alimento desconhecido, confirmar) | alta | T-008, T-011 |
-| T-014 | **Web: painel do dia + histórico** (F7/F8) | média | T-008 |
-| T-015 | **Deploy** do MVP | alta | H-004 |
+| T-012 | **App: gravar áudio** (`expo-audio`, permissão de microfone iOS/Android, limite de duração, upload para a API) | alta | T-001, T-011 |
+| T-013 | **App: tela de revisão** (corrigir item, escolher entre candidatos, cadastrar alimento desconhecido, confirmar) | alta | T-008, T-011 |
+| T-014 | **App: painel do dia + histórico** (F7/F8) | média | T-008 |
+| T-015 | **Deploy da API** | alta | H-004 |
+| T-016 | **Distribuição do app**: `eas.json` com perfis `development` / `preview` / `production`, build interno para o humano testar no aparelho | média | T-001, H-007 |
 
 ## Candidatas (fora do MVP — o orquestrador puxa daqui depois)
 

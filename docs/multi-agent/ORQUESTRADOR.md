@@ -14,11 +14,12 @@ com a base de alimentos, pede confirmação e soma os macros do dia. Detalhe em
 > Substitua esta seção a cada ciclo; não acumule. O que foi feito vive nas PRs e no git.
 
 - **Só documentação.** Sem código, sem CI, sem `package.json`.
-- **Bloqueio principal**: as decisões H-001 a H-006 do `TODO-HUMAN.md` (stack, transcrição,
-  extração, banco/hospedagem, fonte dos dados padrão, modo de merge). Todas têm uma recomendação
-  marcada; o humano pode responder só "ok".
-- **Próximo passo assim que H-001 for respondida**: promover T-001 (scaffold) do `BACKLOG` para o
-  `TODO-AI`, com o brief completo.
+- **Decidido**: o app mobile é **Expo** (H-001, ver `CLAUDE.md` § Stack).
+- **Bloqueio principal**: as decisões abertas do `TODO-HUMAN.md` (back-end, transcrição, extração,
+  banco/hospedagem, fonte dos dados padrão, modo de merge, contas de distribuição). Todas têm uma
+  recomendação marcada; o humano pode responder só "ok".
+- **Próximo passo assim que H-001b e H-004 forem respondidas**: promover T-001 (scaffold, com o
+  app Expo) do `BACKLOG` para o `TODO-AI`, com o brief completo.
 - **Merge**: manual pelo humano até H-006.
 
 ## Como operar
