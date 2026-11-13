@@ -2,7 +2,9 @@ import { render, screen, userEvent, waitFor } from "@testing-library/react-nativ
 import { requestRecordingPermissionsAsync } from "expo-audio";
 import { router } from "expo-router";
 import HomeScreen from "../src/app/index";
+import { todayLocal } from "../src/day/dates";
 import { MIC_DENIED_MESSAGE } from "../src/voice/use-voice-recorder";
+import { callsTo, dayFetch } from "./day-fixtures";
 import { AppProviders, AUTH, jsonResponse, mockFetch, REVIEW } from "./helpers";
 
 jest.mock("expo-secure-store", () => ({
@@ -13,6 +15,7 @@ jest.mock("expo-secure-store", () => ({
 }));
 jest.mock("expo-router", () => ({
   router: { replace: jest.fn(), push: jest.fn(), back: jest.fn(), canGoBack: jest.fn() },
+  useFocusEffect: (cb: () => void) => require("react").useEffect(() => cb(), [cb]),
 }));
 
 const mockRecorder = {
@@ -39,6 +42,11 @@ function permissao(granted: boolean, canAskAgain = true) {
   });
 }
 
+/** `fetch` com o painel (GET /days) respondendo e `resposta` para o resto (POST /voice...). */
+function voiceFetch(resposta: Response): jest.Mock {
+  return dayFetch(mockFetch(), { outras: () => resposta });
+}
+
 async function renderHome() {
   await render(<HomeScreen />, { wrapper: AppProviders });
   // A sessão carrega do SecureStore no boot.
@@ -53,7 +61,7 @@ describe("HomeScreen", () => {
 
   it("permissão do microfone negada mostra orientação e não grava", async () => {
     permissao(false);
-    const fetchMock = mockFetch();
+    const fetchMock = dayFetch(mockFetch());
     await renderHome();
 
     await userEvent.setup().press(screen.getByRole("button", { name: "Gravar" }));
@@ -61,12 +69,12 @@ describe("HomeScreen", () => {
     expect(await screen.findByText(MIC_DENIED_MESSAGE)).toBeOnTheScreen();
     expect(requestPermission).toHaveBeenCalledTimes(1);
     expect(mockRecorder.record).not.toHaveBeenCalled();
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(callsTo(fetchMock, "POST", "/voice")).toHaveLength(0);
   });
 
   it("negada sem poder perguntar de novo oferece abrir as configurações", async () => {
     permissao(false, false);
-    mockFetch();
+    dayFetch(mockFetch());
     await renderHome();
 
     await userEvent.setup().press(screen.getByRole("button", { name: "Gravar" }));
@@ -76,7 +84,7 @@ describe("HomeScreen", () => {
 
   it("gravar e parar envia o áudio em multipart para POST /voice e abre a revisão", async () => {
     permissao(true);
-    const fetchMock = mockFetch().mockResolvedValue(jsonResponse(200, REVIEW));
+    const fetchMock = voiceFetch(jsonResponse(200, REVIEW));
     await renderHome();
     const user = userEvent.setup();
 
@@ -88,9 +96,8 @@ describe("HomeScreen", () => {
     expect(mockRecorder.record).toHaveBeenCalled();
     expect(mockRecorder.stop).toHaveBeenCalled();
 
-    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe("http://localhost:3000/voice");
-    expect(init.method).toBe("POST");
+    const [init] = callsTo(fetchMock, "POST", "/voice");
+    if (!init) throw new Error("POST /voice não foi chamado");
     expect(init.body).toBeInstanceOf(FormData);
     expect((init.headers as Record<string, string>).Authorization).toBe(`Bearer ${AUTH.token}`);
     // multipart: quem põe o Content-Type (com boundary) é o fetch.
@@ -99,9 +106,7 @@ describe("HomeScreen", () => {
 
   it("erro da API ao enviar o áudio aparece na tela", async () => {
     permissao(true);
-    mockFetch().mockResolvedValue(
-      jsonResponse(422, { erro: "Não entendi o áudio. Tente de novo." }),
-    );
+    voiceFetch(jsonResponse(422, { erro: "Não entendi o áudio. Tente de novo." }));
     await renderHome();
     const user = userEvent.setup();
 
@@ -114,7 +119,7 @@ describe("HomeScreen", () => {
 
   it("para sozinho em 60 s e envia", async () => {
     permissao(true);
-    const fetchMock = mockFetch().mockResolvedValue(jsonResponse(200, REVIEW));
+    const fetchMock = voiceFetch(jsonResponse(200, REVIEW));
     let agora = 1_000_000;
     const now = jest.spyOn(Date, "now").mockImplementation(() => agora);
     try {
@@ -125,14 +130,14 @@ describe("HomeScreen", () => {
       agora += 60_000;
       await waitFor(() => expect(mockRecorder.stop).toHaveBeenCalled());
       await waitFor(() => expect(router.push).toHaveBeenCalledWith("/revisao"));
-      expect(fetchMock.mock.calls[0]?.[0]).toBe("http://localhost:3000/voice");
+      expect(callsTo(fetchMock, "POST", "/voice")).toHaveLength(1);
     } finally {
       now.mockRestore();
     }
   });
 
   it("texto enviado vai para POST /voice/text e navega para /revisao", async () => {
-    const fetchMock = mockFetch().mockResolvedValue(jsonResponse(200, REVIEW));
+    const fetchMock = voiceFetch(jsonResponse(200, REVIEW));
     await renderHome();
     const user = userEvent.setup();
 
@@ -140,18 +145,26 @@ describe("HomeScreen", () => {
     await user.press(screen.getByRole("button", { name: "Enviar texto" }));
 
     await waitFor(() => expect(router.push).toHaveBeenCalledWith("/revisao"));
-    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe("http://localhost:3000/voice/text");
-    expect(JSON.parse(init.body as string)).toEqual({ texto: "200 g de arroz" });
+    const [init] = callsTo(fetchMock, "POST", "/voice/text");
+    expect(JSON.parse(init?.body as string)).toEqual({ texto: "200 g de arroz" });
+  });
+
+  it("abaixo do gravador mostra o painel de hoje (GET /days/<hoje>)", async () => {
+    const fetchMock = dayFetch(mockFetch());
+    await renderHome();
+
+    expect(await screen.findByText("Calorias: 1235 / 2000 kcal")).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "Gravar" })).toBeOnTheScreen();
+    expect(callsTo(fetchMock, "GET", `/days/${todayLocal()}`)).toHaveLength(1);
   });
 
   it("texto vazio mostra erro de validação sem chamar a API", async () => {
-    const fetchMock = mockFetch();
+    const fetchMock = dayFetch(mockFetch());
     await renderHome();
 
     await userEvent.setup().press(screen.getByRole("button", { name: "Enviar texto" }));
 
     expect(await screen.findByText("Texto é obrigatório")).toBeOnTheScreen();
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(callsTo(fetchMock, "POST", "/voice/text")).toHaveLength(0);
   });
 });

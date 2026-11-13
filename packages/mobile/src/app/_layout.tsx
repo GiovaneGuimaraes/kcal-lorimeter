@@ -35,6 +35,11 @@ function RootNavigator() {
       <Stack.Protected guard={signedIn}>
         <Stack.Screen name="index" />
         <Stack.Screen name="revisao" options={{ headerShown: true, title: "Revisão" }} />
+        <Stack.Screen name="meta" options={{ headerShown: true, title: "Meta diária" }} />
+        <Stack.Screen
+          name="lancamento"
+          options={{ headerShown: true, title: "Lançar manualmente" }}
+        />
       </Stack.Protected>
       <Stack.Protected guard={!signedIn}>
         <Stack.Screen name="login" />

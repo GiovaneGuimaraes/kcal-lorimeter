@@ -45,11 +45,16 @@ npx expo-doctor                    # (dentro de packages/mobile)
 |---|---|
 | `src/app/_layout.tsx` | Providers + gate de autenticação (`Stack.Protected`): sem sessão → `/login` |
 | `src/app/login.tsx`, `cadastro.tsx` | Entrar / criar conta (validação com os schemas do `@kcal/shared`) |
-| `src/app/index.tsx` | Tela inicial: gravar (até 60 s) ou digitar → `POST /voice` / `POST /voice/text` |
+| `src/app/index.tsx` | Tela inicial: gravar (até 60 s) ou digitar → `POST /voice` / `POST /voice/text`; abaixo, o painel do dia |
 | `src/app/revisao.tsx` | Revisão: troca/busca/cadastra alimento, quantidade, refeição → `POST /entries` por item; ou descarta |
+| `src/app/meta.tsx` | Meta diária: `GET /goals?data=` + `PUT /goals` (vale a partir de hoje) |
+| `src/app/lancamento.tsx` | Lançamento manual: `GET /foods?q=` → `POST /entries` (origem `manual`) |
 | `src/api/` | Cliente HTTP (`Authorization: Bearer`, erros `{ erro }` → `ApiError`) |
 | `src/auth/session.tsx` | Sessão (`token` + `user`) no `expo-secure-store` |
+| `src/day/` | Painel do dia (`GET /days/:data`, setas de dia, editar/apagar lançamento) e datas locais |
+| `src/ui/format.ts` | Números na tela: kcal inteiro, gramas com 1 casa (arredondamento do `@kcal/nutrition-core`) |
 | `src/voice/` | Gravador (`expo-audio`) e a revisão em memória entre telas |
 
-O `@kcal/shared` é resolvido pelo código-fonte (`src`), sem `pnpm build`: condição `source` no
+O `@kcal/shared` e o `@kcal/nutrition-core` são resolvidos pelo código-fonte (`src`), sem
+`pnpm build`: condição `source` no
 `metro.config.js`, `moduleNameMapper` no `jest.config.js` e `customConditions` no `tsconfig.json`.
