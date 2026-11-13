@@ -167,8 +167,8 @@ export function localIsoDate(date: Date): string {
 }
 
 /**
- * Body do `POST /entries` de um item pronto. `voiceLogId` só com `origem: "voz"`: a API recusa
- * registro de voz ligado a lançamento de outra origem.
+ * Body do `POST /entries` de um item pronto. `voiceLogId` vai em voz e texto (a API recusa
+ * só a origem manual com voiceLogId).
  */
 export function entryBody(
   line: ReviewLine,
@@ -183,6 +183,6 @@ export function entryBody(
     quantidade,
     unidade: line.unidade,
     origem: ctx.origem,
-    ...(ctx.origem === "voz" ? { voiceLogId: ctx.voiceLogId } : {}),
+    voiceLogId: ctx.voiceLogId,
   };
 }

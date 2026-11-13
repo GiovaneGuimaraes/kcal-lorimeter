@@ -1,4 +1,4 @@
-import { type DbHandle, foods, mealEntries } from "@kcal/db";
+import { type DbHandle, foods, mealEntries, voiceLogs } from "@kcal/db";
 import { FoodNotFoundError, updateFood } from "@kcal/foods-core";
 import { PortionRequiredError } from "@kcal/nutrition-core";
 import type { CreateEntryInput } from "@kcal/shared";
@@ -99,10 +99,32 @@ describe("entries-core: lançamentos", () => {
       expect(() => lancar(ana, { origem: "voz", voiceLogId: log })).toThrow(VoiceLogNotFoundError);
     });
 
-    it("voiceLogId com origem diferente de voz → ZodError", () => {
+    it("voiceLogId com origem manual → ZodError", () => {
       const log = voiceLogDe(handle, ana);
       expect(() => lancar(ana, { voiceLogId: log })).toThrow(ZodError);
-      expect(() => lancar(ana, { origem: "texto", voiceLogId: log })).toThrow(ZodError);
+      expect(() => lancar(ana, { origem: "manual", voiceLogId: log })).toThrow(ZodError);
+    });
+
+    const statusDe = (id: string) =>
+      handle.db.select({ s: voiceLogs.status }).from(voiceLogs).where(eq(voiceLogs.id, id)).get()
+        ?.s;
+
+    it("voiceLogId com origem texto marca o voice_log como confirmado (idempotente)", () => {
+      const log = voiceLogDe(handle, ana);
+      expect(statusDe(log)).toBe("pendente");
+      lancar(ana, { origem: "texto", voiceLogId: log });
+      expect(statusDe(log)).toBe("confirmado");
+      lancar(ana, { origem: "texto", voiceLogId: log });
+      expect(statusDe(log)).toBe("confirmado");
+    });
+
+    it("voice_log descartado → VoiceLogNotFoundError e nenhum lançamento gravado", () => {
+      const log = voiceLogDe(handle, ana);
+      handle.db.update(voiceLogs).set({ status: "descartado" }).where(eq(voiceLogs.id, log)).run();
+      const antes = handle.db.select().from(mealEntries).all().length;
+      expect(() => lancar(ana, { origem: "voz", voiceLogId: log })).toThrow(VoiceLogNotFoundError);
+      expect(handle.db.select().from(mealEntries).all().length).toBe(antes);
+      expect(statusDe(log)).toBe("descartado");
     });
 
     it.each([

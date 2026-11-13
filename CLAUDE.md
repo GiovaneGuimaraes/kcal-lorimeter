@@ -34,7 +34,7 @@ packages/
   foods-core/ @kcal/foods-core — listFoods, createFood, updateFood, matchFood (exato → trecho → trigramas ≥ 0,5), normalizeFoodText
   goals-core/ @kcal/goals-core — setGoal, getGoalForDate (vigente ≤ data)
   voice-core/ @kcal/voice-core — processVoice/processText/discardVoiceLog; VoiceReview com precisaPeso; áudio nunca em disco
-  entries-core/ @kcal/entries-core — createEntry/updateEntry/deleteEntry com snapshot, getDaySummary; PATCH só de refeição/data NÃO recalcula o snapshot
+  entries-core/ @kcal/entries-core — createEntry (com voiceLogId marca o voice_log como confirmado)/updateEntry/deleteEntry com snapshot, getDaySummary; PATCH só de refeição/data NÃO recalcula o snapshot
   mobile/    @kcal/mobile    — Expo SDK 58 + Expo Router (src/app/): login, cadastro, index (gravador + painel do dia), revisao, meta, lancamento; src/api (client com token em expo-secure-store), src/auth, src/voice, src/day, src/ui; metro.config.js resolve @kcal/* pela condição "source"; jest-expo + RNTL
 ```
 

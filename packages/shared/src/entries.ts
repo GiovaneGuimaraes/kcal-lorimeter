@@ -38,7 +38,7 @@ const id = (rotulo: string) =>
 
 /**
  * Body de `POST /entries`. A quantidade é convertida em gramas pelo código (`gramsFromQuantity`);
- * só as gramas resolvidas são gravadas. `voiceLogId` exige `origem = "voz"`.
+ * só as gramas resolvidas são gravadas. `voiceLogId` exige `origem` voz ou texto (a revisão de uma frase digitada também tem `voice_log`).
  */
 export const CreateEntrySchema = z
   .object({
@@ -50,8 +50,8 @@ export const CreateEntrySchema = z
     origem: EntryOrigemSchema.default("manual"),
     voiceLogId: id("Registro de voz").optional(),
   })
-  .refine((e) => e.voiceLogId === undefined || e.origem === "voz", {
-    error: "Lançamento ligado a um registro de voz deve ter origem voz",
+  .refine((e) => e.voiceLogId === undefined || e.origem !== "manual", {
+    error: "Lançamento ligado a um registro de voz deve ter origem voz ou texto",
   });
 export type CreateEntryInput = z.input<typeof CreateEntrySchema>;
 export type CreateEntryBody = z.output<typeof CreateEntrySchema>;
