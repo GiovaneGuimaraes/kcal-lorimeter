@@ -9,18 +9,23 @@ Contador de calorias por voz: a pessoa grava o que comeu, o app transcreve, extr
 com a base de alimentos, pede confirmação e soma os macros do dia. Detalhe em
 [`docs/PRODUTO.md`](../PRODUTO.md); regras técnicas em [`CLAUDE.md`](../../CLAUDE.md).
 
-## Estado atual (2026-11-12 — fase 1, primeira versão)
+## Estado atual (2026-11-12 — fase 1, back-end do MVP pronto)
 
 > Substitua esta seção a cada ciclo; não acumule. O que foi feito vive nas PRs e no git.
 
-- **Stack decidida** (H-001 a H-005, ver `CLAUDE.md` § Stack): pnpm + TS strict, Jest, Biome,
-  Hono local, SQLite + Drizzle, auth própria, Whisper, Claude Haiku 5.5, TACO.
-- **Fila** (`TODO-AI.md`): T-001 (scaffold) primeiro; depois T-003, T-004, T-009, T-010 em
-  paralelo (sem arquivos em comum). O resto do MVP está no `BACKLOG` com as dependências.
-- **Integração** (H-006): branches aprovadas são mergeadas pelo orquestrador na branch de trabalho
-  `GiovaneGuimaraes/kcal-lorimeter`; a PR dela para a `main` é do humano.
-- **Pendências abertas**: H-007 (contas de distribuição) e H-008 (chaves de API) — nenhuma
-  bloqueia código.
+- **Feito e integrado na branch de trabalho** (`GiovaneGuimaraes/kcal-lorimeter`): T-001 scaffold,
+  T-003 db, T-004 nutrition-core, T-009 stt, T-010 llm, T-002 seed, T-005 auth, T-006 foods,
+  T-007 goals, T-008 entries, T-011 voice. API completa: /auth, /me, /foods, /goals, /entries,
+  /days/:data, /voice. 12 packages, ~460 testes, lint/format/build verdes.
+- **Em andamento**: T-012 (app: login + gravação). Depois: T-013 (revisão) e T-014 (painel) em
+  paralelo. Ambas são verificação nível 4 (humano no aparelho).
+- **Integração** (H-006): o orquestrador mergeia as branches aprovadas aqui; a PR para a `main`
+  é do humano.
+- **Pendências abertas**: H-009 (conferir seed TACO), H-008 (chaves de API para testar voz de
+  verdade), H-007 (contas de distribuição). Nenhuma bloqueia código.
+- **Lição desta fase**: todas as 11 tarefas aprovaram em 1 ciclo; o custo real foi conflito de
+  merge trivial (app.ts, shared/index.ts, lockfile) entre executores paralelos — resolver com
+  "ambos os lados" + `pnpm install` e regenerar o lock.
 
 ## Como operar
 
