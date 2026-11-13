@@ -16,8 +16,13 @@ com a base de alimentos, pede confirmação e soma os macros do dia. Detalhe em
 - **MVP implementado** (T-001 a T-014 + T-017) e integrado na branch de trabalho
   `GiovaneGuimaraes/kcal-lorimeter`. 12 packages, 561 testes, lint/format/build verdes. Smoke da
   API integrada feito pelo orquestrador (register → meta → lançamento → painel → voz sem chave → 503).
-- **Fila vazia.** O que falta é humano: H-010 (testar no aparelho), H-009 (conferir seed TACO),
-  H-008 (chaves), H-007 (contas de distribuição), e abrir a PR desta branch para a `main` (H-006).
+- **PR #2 mergeada na `main` (2026-11-13) com CI verde.** Merge passou a modo auto (H-006,
+  opção b): revisor `APROVADA` + CI verde na PR → o orquestrador mergeia.
+- **Onda 2 (2026-11-13) integrada**: correções F-1/F-2/F-4/F-5/F-6 e visual D "Cartaz" em todas as
+  telas (T-018 a T-024). 639 testes. Prints não feitos (sem web): a conferência visual é o H-010.
+  Esperam decisão: T-025/F-3 (H-011), F-7/F-8 (H-014); logo (H-013) e gesto de gravar (H-012)
+  seguem com o default do handoff.
+- Pendências humanas antigas: H-010 (aparelho), H-009 (seed TACO), H-008 (chaves), H-007 (contas).
 - **Próximo ciclo**: promover do `BACKLOG` o que o teste no aparelho revelar; depois T-016
   (EAS) quando H-007 for respondida.
 
@@ -48,7 +53,7 @@ com a base de alimentos, pede confirmação e soma os macros do dia. Detalhe em
   higiene do repo) pode fazer inline.
 - Não decide produto, stack, gasto nem prioridade: isso vai para o `TODO-HUMAN.md` com opções,
   trade-offs e uma recomendação.
-- Não faz merge sem a autorização de H-006.
+- Só mergeia com revisor `APROVADA` **e** CI verde na PR (H-006, modo auto desde 2026-11-13).
 
 ## Lições operacionais
 

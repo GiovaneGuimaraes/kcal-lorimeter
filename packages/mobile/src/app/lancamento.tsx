@@ -1,5 +1,6 @@
 import {
   CreateEntrySchema,
+  EntryMealSchema,
   type FoodDto,
   IsoDateSchema,
   type MealKind,
@@ -16,35 +17,25 @@ import {
   Text,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { errorMessage } from "../api/client";
 import { createEntry } from "../api/entries";
 import { searchFoods } from "../api/foods";
 import { formatDayLabel, mealForHour, todayLocal } from "../day/dates";
-import { ChoiceRow } from "../ui/choice";
-import { Button, colors, ErrorMessage, Field } from "../ui/components";
-import { formatGrams, formatKcal, MEAL_OPTIONS, parseNumber } from "../ui/format";
-
-/** Unidades oferecidas: peso sempre; "porção" só se o alimento tiver porção padrão. */
-function unitOptions(food: FoodDto): { value: QuantityUnit; label: string }[] {
-  const opcoes: { value: QuantityUnit; label: string }[] = [
-    { value: "g", label: "g" },
-    { value: "ml", label: "ml" },
-  ];
-  if (food.porcaoPadraoG) {
-    opcoes.push({
-      value: "unidade",
-      label: `${food.nomePorcao ?? "porção"} (${formatGrams(food.porcaoPadraoG)} g)`,
-    });
-  }
-  return opcoes;
-}
+import { SegmentedRow } from "../ui/choice";
+import { Button, ErrorMessage, Field, TopBar } from "../ui/components";
+import { formatKcal, MEAL_OPTIONS, parseNumber } from "../ui/format";
+import { textStyles, theme } from "../ui/theme";
+import { unitOptions } from "../ui/unit-options";
 
 /**
  * Lançamento manual (F6): busca o alimento (`GET /foods?q=`), quantidade + unidade e refeição →
  * `POST /entries` com origem `manual`. Quem converte em gramas e calcula os macros é o servidor.
+ * Parâmetros opcionais: `data` (YYYY-MM-DD) e `refeicao` (ex.: "+ adicionar" numa refeição do
+ * painel); inválidos caem no default (hoje / refeição pela hora do aparelho).
  */
 export default function LancamentoScreen() {
-  const params = useLocalSearchParams<{ data?: string }>();
+  const params = useLocalSearchParams<{ data?: string; refeicao?: string }>();
   const hoje = todayLocal();
   const data = IsoDateSchema.safeParse(params.data).success ? (params.data as string) : hoje;
 
@@ -54,10 +45,18 @@ export default function LancamentoScreen() {
   const [food, setFood] = useState<FoodDto | null>(null);
   const [quantidade, setQuantidade] = useState("");
   const [unidade, setUnidade] = useState<QuantityUnit>("g");
-  const [refeicao, setRefeicao] = useState<MealKind>(() => mealForHour(new Date().getHours()));
+  const [refeicao, setRefeicao] = useState<MealKind>(() => {
+    const doParam = EntryMealSchema.safeParse(params.refeicao);
+    return doParam.success ? doParam.data : mealForHour(new Date().getHours());
+  });
   const [salvando, setSalvando] = useState(false);
   const [erroQuantidade, setErroQuantidade] = useState<string | undefined>();
   const [erro, setErro] = useState<string | null>(null);
+
+  function voltar() {
+    if (router.canGoBack()) router.back();
+    else router.replace("/");
+  }
 
   async function buscar() {
     const q = busca.trim();
@@ -98,8 +97,7 @@ export default function LancamentoScreen() {
     setSalvando(true);
     try {
       await createEntry(parsed.data);
-      if (router.canGoBack()) router.back();
-      else router.replace("/");
+      voltar();
     } catch (err) {
       setErro(errorMessage(err));
       setSalvando(false);
@@ -107,95 +105,127 @@ export default function LancamentoScreen() {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.safe}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <Text style={styles.hint}>{`Lançar em: ${formatDayLabel(data, hoje)}`}</Text>
+    <SafeAreaView edges={["top", "bottom"]} style={styles.safe}>
+      <TopBar title="Lançar" onBack={voltar} />
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+          <Text style={styles.label}>{`Lançar em: ${formatDayLabel(data, hoje)}`}</Text>
 
-        {food ? (
-          <View style={styles.card}>
-            <Text style={styles.foodName}>{food.nome}</Text>
-            <Text style={styles.hint}>
-              {`${formatKcal(food.kcal100g)} kcal por 100 g · fonte: ${food.fonte}`}
-            </Text>
-            <Button
-              title="Trocar alimento"
-              variant="secondary"
-              disabled={salvando}
-              onPress={() => setFood(null)}
-            />
-            <Field
-              label="Quantidade"
-              value={quantidade}
-              onChangeText={setQuantidade}
-              error={erroQuantidade}
-              keyboardType="decimal-pad"
-              placeholder="200"
-              editable={!salvando}
-            />
-            <ChoiceRow
-              label="Unidade"
-              options={unitOptions(food)}
-              value={unidade}
-              onChange={setUnidade}
-              disabled={salvando}
-            />
-            <ChoiceRow
-              label="Refeição"
-              options={MEAL_OPTIONS}
-              value={refeicao}
-              onChange={setRefeicao}
-              disabled={salvando}
-            />
-            <ErrorMessage>{erro}</ErrorMessage>
-            <Button title="Lançar" busy={salvando} onPress={lancar} />
-          </View>
-        ) : (
-          <>
-            <Field
-              label="Buscar alimento"
-              value={busca}
-              onChangeText={setBusca}
-              placeholder="arroz, ovo, whey…"
-              returnKeyType="search"
-              onSubmitEditing={buscar}
-            />
-            <Button title="Buscar" busy={buscando} disabled={!busca.trim()} onPress={buscar} />
-            <ErrorMessage>{erro}</ErrorMessage>
-            {resultados?.length === 0 ? (
-              <Text style={styles.hint}>Nenhum alimento encontrado.</Text>
-            ) : null}
-            {resultados?.map((f) => (
-              <Pressable
-                key={f.id}
-                accessibilityRole="button"
-                onPress={() => escolher(f)}
-                style={styles.result}
-              >
-                <Text style={styles.foodName}>{f.nome}</Text>
-                <Text style={styles.hint}>{`${formatKcal(f.kcal100g)} kcal por 100 g`}</Text>
-              </Pressable>
-            ))}
-          </>
-        )}
-      </ScrollView>
-    </KeyboardAvoidingView>
+          {food ? (
+            <View style={styles.card}>
+              <View style={styles.chosen}>
+                <Text style={styles.foodName}>{food.nome}</Text>
+                <Text style={styles.line}>{`${formatKcal(food.kcal100g)} kcal / 100 g`}</Text>
+                <Text style={styles.source}>{`fonte: ${food.fonte}`}</Text>
+              </View>
+              <Button
+                title="Trocar alimento"
+                variant="secondary"
+                disabled={salvando}
+                onPress={() => setFood(null)}
+              />
+              <Field
+                label="Quantidade"
+                value={quantidade}
+                onChangeText={setQuantidade}
+                error={erroQuantidade}
+                keyboardType="decimal-pad"
+                placeholder="200"
+                editable={!salvando}
+              />
+              <SegmentedRow
+                label="Unidade"
+                options={unitOptions(food)}
+                value={unidade}
+                onChange={setUnidade}
+                disabled={salvando}
+              />
+              <SegmentedRow
+                label="Refeição"
+                options={MEAL_OPTIONS}
+                value={refeicao}
+                onChange={setRefeicao}
+                disabled={salvando}
+              />
+              <ErrorMessage>{erro}</ErrorMessage>
+              <Button title="Lançar" busy={salvando} onPress={lancar} />
+            </View>
+          ) : (
+            <>
+              <Field
+                label="Buscar alimento"
+                value={busca}
+                onChangeText={setBusca}
+                placeholder="arroz, ovo, whey…"
+                returnKeyType="search"
+                onSubmitEditing={buscar}
+              />
+              <Button title="Buscar" busy={buscando} disabled={!busca.trim()} onPress={buscar} />
+              <ErrorMessage>{erro}</ErrorMessage>
+              {resultados?.length === 0 ? (
+                <Text style={styles.empty}>Nenhum alimento encontrado.</Text>
+              ) : null}
+              {resultados?.length ? (
+                <View style={styles.results}>
+                  {resultados.map((f) => (
+                    <Pressable
+                      key={f.id}
+                      accessibilityRole="button"
+                      onPress={() => escolher(f)}
+                      style={({ pressed }) => [styles.result, pressed && styles.resultPressed]}
+                    >
+                      <Text style={styles.resultName}>{f.nome}</Text>
+                      <Text style={styles.line}>{`${formatKcal(f.kcal100g)} kcal / 100 g`}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+              ) : null}
+            </>
+          )}
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
+const c = theme.color;
+
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
-  container: { padding: 24, gap: 16 },
-  card: { gap: 12 },
-  hint: { fontSize: 14, color: colors.muted },
-  foodName: { fontSize: 17, fontWeight: "600", color: colors.text },
+  safe: { flex: 1, backgroundColor: c.paper },
+  flex: { flex: 1 },
+  container: { padding: theme.space.page, gap: theme.space.block },
+  card: { gap: theme.space.row },
+  label: { ...textStyles.label, color: c.ink },
+  line: { ...textStyles.line, color: c.ink },
+  source: { ...textStyles.line, color: c.textMuted },
+  empty: { ...textStyles.body, color: c.textMuted },
+  chosen: { gap: 4 },
+  foodName: {
+    fontFamily: theme.font.display,
+    fontSize: 22,
+    lineHeight: 26,
+    letterSpacing: -0.3,
+    textTransform: "uppercase",
+    color: c.ink,
+  },
+  results: { borderTopWidth: theme.border.medium, borderColor: c.ink },
   result: {
-    minHeight: 48,
-    paddingVertical: 8,
+    minHeight: theme.touch + 12,
+    paddingVertical: 10,
+    gap: 2,
     justifyContent: "center",
-    borderBottomWidth: 1,
-    borderColor: colors.border,
+    borderBottomWidth: theme.border.medium,
+    borderColor: c.ink,
+  },
+  resultPressed: { backgroundColor: c.accent },
+  resultName: {
+    fontFamily: theme.font.display,
+    fontSize: 17,
+    lineHeight: 20,
+    textTransform: "uppercase",
+    color: c.ink,
   },
 });

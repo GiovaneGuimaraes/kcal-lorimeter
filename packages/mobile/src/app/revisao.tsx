@@ -3,35 +3,50 @@ import { MEAL_ORDER } from "@kcal/shared";
 import { router } from "expo-router";
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { errorMessage } from "../api/client";
 import { createEntry, discardVoiceLog } from "../api/review-entries";
-import { Button, colors, ErrorMessage } from "../ui/components";
-import { Chip, ReviewItemCard } from "../voice/review-item";
+import { SegmentedRow } from "../ui/choice";
+import { Button, ErrorMessage, TopBar } from "../ui/components";
+import { textStyles, theme } from "../ui/theme";
+import { ReviewItemCard } from "../voice/review-item";
 import {
   confirmBlockers,
   entryBody,
+  firstPendingIndex,
+  formatKcalMilhar,
   initialMeal,
   initLines,
+  itemNumber,
   localIsoDate,
   MEAL_LABELS,
   type ReviewLine,
+  reviewTotal,
 } from "../voice/review-lines";
 import { type PendingReview, useReview } from "../voice/review-store";
 
+const c = theme.color;
+
+const MEAL_CHOICES = MEAL_ORDER.map((value) => ({ value, label: MEAL_LABELS[value] }));
+
 /**
- * Revisão do lançamento por voz/texto: nada é salvo sem a pessoa confirmar. Cada item pode trocar
- * de alimento (candidato, busca ou cadastro), mudar quantidade/unidade ou sair da lista.
- * Confirmar cria um `POST /entries` por item; os macros são calculados pelo servidor.
+ * Revisão do lançamento por voz/texto ("CONFERE?", § 2.4.7): nada é salvo sem a pessoa confirmar.
+ * Cada item pode trocar de alimento (candidato, busca ou cadastro), mudar quantidade/unidade ou
+ * sair da lista. Os kcal mostrados vêm da API ou do `@kcal/nutrition-core` depois de editar;
+ * salvar cria um `POST /entries` por item e o snapshot gravado é o do servidor.
  */
 export default function RevisaoScreen() {
   const { review } = useReview();
 
   if (!review) {
     return (
-      <View style={styles.empty}>
-        <Text style={styles.text}>Nada para revisar.</Text>
-        <Button title="Voltar" onPress={() => router.replace("/")} />
-      </View>
+      <SafeAreaView style={styles.safe}>
+        <TopBar title="CONFERE?" onBack={voltar} />
+        <View style={styles.empty}>
+          <Text style={styles.body}>Nada para revisar.</Text>
+          <Button title="Voltar" onPress={() => router.replace("/")} />
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -44,6 +59,13 @@ function voltar() {
   else router.replace("/");
 }
 
+/** Motivo do botão principal estar indisponível, ou `undefined` se pode salvar. */
+function motivoBloqueio(lines: readonly ReviewLine[]): string | undefined {
+  const pendente = firstPendingIndex(lines);
+  if (pendente >= 0) return `RESOLVA O ITEM ${itemNumber(pendente)}`;
+  return confirmBlockers(lines).length > 0 ? "NADA PARA SALVAR" : undefined;
+}
+
 function Revisao({ review }: { review: PendingReview }) {
   const { setReview } = useReview();
   const [lines, setLines] = useState<ReviewLine[]>(() => initLines(review));
@@ -52,7 +74,8 @@ function Revisao({ review }: { review: PendingReview }) {
   const [descartando, setDescartando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
-  const bloqueios = confirmBlockers(lines);
+  const bloqueio = motivoBloqueio(lines);
+  const total = reviewTotal(lines);
   const algumSalvo = lines.some((l) => l.salvo);
   const ocupado = salvando || descartando;
 
@@ -61,7 +84,7 @@ function Revisao({ review }: { review: PendingReview }) {
   }
 
   async function confirmar() {
-    if (bloqueios.length > 0) return;
+    if (bloqueio) return;
     setErro(null);
     setSalvando(true);
     const ctx = {
@@ -115,85 +138,111 @@ function Revisao({ review }: { review: PendingReview }) {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.safe}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <View style={styles.transcricao}>
-          <Text style={styles.label}>Você disse</Text>
-          <Text style={styles.text}>{review.transcricao}</Text>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.label}>Refeição</Text>
-          <View style={styles.row}>
-            {MEAL_ORDER.map((m) => (
-              <Chip
-                key={m}
-                label={MEAL_LABELS[m]}
-                selected={refeicao === m}
-                disabled={ocupado || algumSalvo}
-                onPress={() => setRefeicao(m)}
-              />
-            ))}
+    <SafeAreaView style={styles.safe}>
+      <KeyboardAvoidingView
+        style={styles.safe}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <TopBar title="CONFERE?" onBack={voltar} />
+        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+          <View style={styles.disse}>
+            <Text style={styles.disseLabel}>VOCÊ DISSE</Text>
+            <Text style={styles.disseText}>{`“${review.transcricao}”`}</Text>
           </View>
-        </View>
 
-        {lines.length === 0 ? (
-          <Text style={styles.text}>Não entendi nenhum alimento. Descarte e tente de novo.</Text>
-        ) : (
-          lines.map((line, i) => (
-            <ReviewItemCard
-              // A ordem dos itens é fixa na resposta: o índice serve de chave.
-              // biome-ignore lint/suspicious/noArrayIndexKey: lista estática, não reordena
-              key={i}
-              line={line}
-              index={i}
-              locked={ocupado}
-              onChange={(l) => atualizar(i, l)}
+          <View style={styles.page}>
+            <SegmentedRow
+              label="Refeição"
+              options={MEAL_CHOICES}
+              value={refeicao}
+              disabled={ocupado || algumSalvo}
+              onChange={setRefeicao}
             />
-          ))
-        )}
-
-        {bloqueios.length > 0 ? (
-          <View style={styles.section}>
-            <Text style={styles.label}>Antes de confirmar</Text>
-            {bloqueios.map((b) => (
-              <Text key={b} style={styles.blocker}>
-                {b}
-              </Text>
-            ))}
           </View>
-        ) : null}
-        <ErrorMessage>{erro}</ErrorMessage>
 
-        <Button
-          title="Confirmar"
-          onPress={confirmar}
-          disabled={bloqueios.length > 0 || descartando}
-          busy={salvando}
-        />
-        <Button
-          title={algumSalvo ? "Sair sem salvar o resto" : "Descartar"}
-          variant="secondary"
-          onPress={descartar}
-          disabled={salvando}
-          busy={descartando}
-        />
-      </ScrollView>
-    </KeyboardAvoidingView>
+          {lines.length === 0 ? (
+            <Text style={[styles.body, styles.page]}>
+              Não entendi nenhum alimento. Descarte e tente de novo.
+            </Text>
+          ) : (
+            <View style={styles.items}>
+              {lines.map((line, i) => (
+                <ReviewItemCard
+                  // A ordem dos itens é fixa na resposta: o índice serve de chave.
+                  // biome-ignore lint/suspicious/noArrayIndexKey: lista estática, não reordena
+                  key={i}
+                  line={line}
+                  index={i}
+                  locked={ocupado}
+                  onChange={(l) => atualizar(i, l)}
+                />
+              ))}
+            </View>
+          )}
+        </ScrollView>
+
+        <View style={styles.footer}>
+          <View style={styles.totalRow}>
+            <Text style={styles.totalLabel}>
+              {`TOTAL · ${total.contados} DE ${total.itens} ${total.itens === 1 ? "ITEM" : "ITENS"}`}
+            </Text>
+            <Text style={styles.totalKcal}>{`${formatKcalMilhar(total.kcal)} KCAL`}</Text>
+          </View>
+          <ErrorMessage>{erro}</ErrorMessage>
+          <View style={styles.actions}>
+            <View style={algumSalvo ? styles.actionWide : styles.actionDiscard}>
+              <Button
+                title={algumSalvo ? "SAIR SEM SALVAR O RESTO" : "DESCARTAR"}
+                variant="secondary"
+                onPress={descartar}
+                disabled={salvando}
+                busy={descartando}
+              />
+            </View>
+            <View style={styles.actionWide}>
+              <Button
+                title="SALVAR"
+                onPress={confirmar}
+                disabledReason={bloqueio}
+                disabled={descartando}
+                busy={salvando}
+              />
+            </View>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
-  container: { padding: 24, gap: 16, backgroundColor: colors.background },
-  empty: { flex: 1, padding: 24, gap: 12, justifyContent: "center" },
-  transcricao: { gap: 4 },
-  section: { gap: 8 },
-  row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  label: { fontSize: 14, fontWeight: "600", color: colors.muted },
-  text: { fontSize: 16, color: colors.text },
-  blocker: { fontSize: 15, color: colors.danger },
+  safe: { flex: 1, backgroundColor: c.paper },
+  empty: { flex: 1, padding: theme.space.page, gap: 12, justifyContent: "center" },
+  scroll: { gap: theme.space.block, paddingBottom: theme.space.block },
+  page: { paddingHorizontal: theme.space.page },
+  disse: {
+    gap: 6,
+    paddingHorizontal: theme.space.page,
+    paddingVertical: theme.space.block,
+    backgroundColor: c.ink,
+  },
+  disseLabel: { ...textStyles.label, color: c.accent },
+  disseText: { fontFamily: theme.font.bold, fontSize: 20, lineHeight: 26, color: c.onInk },
+  items: { borderTopWidth: theme.border.medium, borderColor: c.ink },
+  body: { ...textStyles.body, color: c.ink },
+  footer: {
+    gap: 10,
+    paddingHorizontal: theme.space.page,
+    paddingTop: theme.space.row,
+    paddingBottom: theme.space.row,
+    borderTopWidth: theme.border.heavy,
+    borderColor: c.ink,
+    backgroundColor: c.paper,
+  },
+  totalRow: { flexDirection: "row", alignItems: "baseline", justifyContent: "space-between" },
+  totalLabel: { ...textStyles.label, fontSize: 13, color: c.ink },
+  totalKcal: { fontFamily: theme.font.monoBold, fontSize: 16, color: c.ink },
+  actions: { flexDirection: "row", alignItems: "center", gap: 10 },
+  actionDiscard: { width: 140 },
+  actionWide: { flex: 1 },
 });

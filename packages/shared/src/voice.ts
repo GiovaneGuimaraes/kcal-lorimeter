@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { ExtractedItemSchema } from "./extraction";
 import { MatchFoodResultSchema } from "./foods";
+import { MacrosSchema } from "./nutrition";
 
 /**
  * Um item da tela de revisão do lançamento por voz/texto (F5/F6):
@@ -8,14 +9,16 @@ import { MatchFoodResultSchema } from "./foods";
  * - `match`: o casamento com a base (`exact` / `candidates` / `none`);
  * - `gramas`: só quando o casamento é `exact` e a unidade converte (g/ml, ou porção cadastrada);
  * - `precisaPeso`: `true` quando o casamento é `exact` mas a unidade ("scoop", "unidade"...) exige
- *   porção padrão que o alimento não tem — a revisão pede o peso.
- *
- * Nenhum valor nutricional aqui: os macros são calculados na confirmação (entries-core).
+ *   porção padrão que o alimento não tem — a revisão pede o peso;
+ * - `macros`: os macros de `gramas` do alimento casado, calculados no servidor pelo `nutrition-core`
+ *   (`macrosForGrams`), nunca pelo LLM; presentes só quando há `exact` e `gramas`. Sem arredondar
+ *   (a UI usa `formatMacros`). São para exibir: o snapshot gravado é o da confirmação (entries-core).
  */
 export const VoiceReviewItemSchema = z.object({
   extraido: ExtractedItemSchema,
   match: MatchFoodResultSchema,
   gramas: z.number().nonnegative().optional(),
+  macros: MacrosSchema.optional(),
   precisaPeso: z.boolean(),
 });
 export type VoiceReviewItem = z.infer<typeof VoiceReviewItemSchema>;

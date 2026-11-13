@@ -1,5 +1,10 @@
-import { addDays, formatDayLabel, mealForHour, todayLocal } from "../src/day/dates";
-import { formatGrams, formatKcal, parseNumber } from "../src/ui/format";
+import {
+  addDays,
+  formatDayLabel,
+  formatDayShortLabel,
+  mealForHour,
+  todayLocal,
+} from "../src/day/dates";
 
 describe("datas do painel", () => {
   it("todayLocal usa o fuso do aparelho (componentes locais do Date)", () => {
@@ -23,26 +28,19 @@ describe("datas do painel", () => {
     expect(formatDayLabel("2025-12-31", "2026-01-02")).toBe("quarta-feira, 31 de dezembro de 2025");
   });
 
+  it("formatDayShortLabel: HOJE/ONTEM + dia da semana, dia e mês curtos (ano se outro ano)", () => {
+    expect(formatDayShortLabel("2026-11-13", "2026-11-13")).toBe("HOJE · SEX 13 NOV");
+    expect(formatDayShortLabel("2026-11-12", "2026-11-13")).toBe("ONTEM · QUI 12 NOV");
+    expect(formatDayShortLabel("2026-11-09", "2026-11-13")).toBe("SEG 9 NOV");
+    expect(formatDayShortLabel("2026-03-07", "2026-11-13")).toBe("SÁB 7 MAR");
+    expect(formatDayShortLabel("2025-12-31", "2026-01-01")).toBe("ONTEM · QUA 31 DEZ 2025");
+    expect(formatDayShortLabel("2025-12-28", "2026-01-02")).toBe("DOM 28 DEZ 2025");
+  });
+
   it("mealForHour sugere a refeição pela hora", () => {
     expect(mealForHour(7)).toBe("cafe");
     expect(mealForHour(12)).toBe("almoco");
     expect(mealForHour(16)).toBe("lanche");
     expect(mealForHour(20)).toBe("jantar");
-  });
-});
-
-describe("formatação", () => {
-  it("kcal inteiro e gramas com 1 casa (half-up, vírgula)", () => {
-    expect(formatKcal(256.5)).toBe("257");
-    expect(formatKcal(0)).toBe("0");
-    expect(formatGrams(1.15)).toBe("1,2");
-    expect(formatGrams(200)).toBe("200");
-    expect(formatGrams(0.04)).toBe("0");
-  });
-
-  it("parseNumber aceita vírgula e trata vazio como NaN", () => {
-    expect(parseNumber("150,5")).toBe(150.5);
-    expect(parseNumber(" 20 ")).toBe(20);
-    expect(parseNumber("")).toBeNaN();
   });
 });

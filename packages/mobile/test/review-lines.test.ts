@@ -1,14 +1,29 @@
+import { macrosForGrams } from "@kcal/nutrition-core";
 import type { FoodDto } from "@kcal/shared";
 import {
   allowedUnits,
   confirmBlockers,
+  firstPendingIndex,
+  formatKcalMilhar,
   initialMeal,
   initLines,
+  itemNumber,
+  lineMacros,
   localIsoDate,
   mealForHour,
   parseQuantidade,
+  reviewTotal,
+  unitChoices,
   withFood,
+  withQuantidade,
+  withUnidade,
 } from "../src/voice/review-lines";
+
+// Espião na função real: prova que o app usa a mesma conta do servidor (nada de conta própria).
+jest.mock("@kcal/nutrition-core", () => {
+  const real = jest.requireActual("@kcal/nutrition-core");
+  return { ...real, macrosForGrams: jest.fn(real.macrosForGrams) };
+});
 import type { PendingReview } from "../src/voice/review-store";
 
 /** Alimentos inventados: números só de teste. */
@@ -88,10 +103,11 @@ describe("parseQuantidade", () => {
 });
 
 describe("allowedUnits", () => {
-  it("só g/ml sem porção; todas com porção", () => {
-    expect(allowedUnits(null)).toEqual(["g", "ml"]);
-    expect(allowedUnits(food("x", null))).toEqual(["g", "ml"]);
+  it("só g sem porção; g e as de porção com porção; nunca ml", () => {
+    expect(allowedUnits(null)).toEqual(["g"]);
+    expect(allowedUnits(food("x", null))).toEqual(["g"]);
     expect(allowedUnits(food("x", 30))).toContain("scoop");
+    expect(allowedUnits(food("x", 30))).not.toContain("ml");
   });
 });
 
@@ -178,5 +194,114 @@ describe("confirmBlockers", () => {
     expect(confirmBlockers(base.map((l) => ({ ...l, removido: true })))).toEqual([
       "Nenhum item para salvar.",
     ]);
+  });
+});
+
+describe("lineMacros / reviewTotal", () => {
+  const arroz = food("arroz", null);
+  const ovo = food("ovo", 50);
+  const MACROS_API = { kcal: 200, proteinaG: 2, carboG: 2, gorduraG: 2 };
+  const [arrozLine, ovoLine, nadaLine] = initLines(
+    review([
+      {
+        extraido: { alimento: "arroz", quantidade: 200, unidade: "g" },
+        match: { kind: "exact", food: arroz },
+        gramas: 200,
+        macros: MACROS_API,
+        precisaPeso: false,
+      },
+      {
+        extraido: { alimento: "ovo", quantidade: 2, unidade: "unidade" },
+        match: { kind: "exact", food: ovo },
+        gramas: 100,
+        precisaPeso: false,
+      },
+      {
+        extraido: { alimento: "farofa", quantidade: 1, unidade: "colher" },
+        match: { kind: "none" },
+        precisaPeso: false,
+      },
+    ]),
+  );
+  if (!arrozLine || !ovoLine || !nadaLine) throw new Error("sem itens");
+
+  beforeEach(() => jest.mocked(macrosForGrams).mockClear());
+
+  it("sem edição usa os macros da API, sem recalcular", () => {
+    expect(lineMacros(arrozLine)).toBe(MACROS_API);
+    expect(macrosForGrams).not.toHaveBeenCalled();
+  });
+
+  it("depois de editar a quantidade recalcula com gramsFromQuantity + macrosForGrams", () => {
+    const editada = withQuantidade(arrozLine, "150,5");
+    expect(editada.macrosApi).toBeNull();
+    expect(lineMacros(editada)).toEqual({
+      kcal: 150.5,
+      proteinaG: 1.505,
+      carboG: 1.505,
+      gorduraG: 1.505,
+    });
+    expect(macrosForGrams).toHaveBeenCalledWith(
+      { kcal: 100, proteinaG: 1, carboG: 1, gorduraG: 1 },
+      150.5,
+    );
+  });
+
+  it("unidade de porção usa a porção do alimento; trocar unidade ou alimento recalcula", () => {
+    expect(lineMacros(ovoLine)?.kcal).toBe(100);
+    expect(macrosForGrams).toHaveBeenLastCalledWith(expect.anything(), 100);
+    expect(lineMacros(withUnidade(ovoLine, "g"))?.kcal).toBe(2);
+    expect(withFood(arrozLine, ovo).macrosApi).toBeNull();
+  });
+
+  it("sem alimento, quantidade inválida ou unidade sem porção → null", () => {
+    expect(lineMacros(nadaLine)).toBeNull();
+    expect(lineMacros(withQuantidade(ovoLine, "0"))).toBeNull();
+    expect(
+      lineMacros({ ...withFood(nadaLine, arroz), unidade: "colher", quantidade: "1" }),
+    ).toBeNull();
+  });
+
+  it("total soma só os não removidos com macros conhecidos, arredondado", () => {
+    const lines = [arrozLine, withQuantidade(ovoLine, "1,5"), nadaLine];
+    // 200 (API) + 75 (1,5 × 50 g) = 275; farofa sem alimento fica de fora.
+    expect(reviewTotal(lines)).toEqual({ kcal: 275, contados: 2, itens: 3 });
+    expect(reviewTotal(lines.map((l, i) => (i === 0 ? { ...l, removido: true } : l)))).toEqual({
+      kcal: 75,
+      contados: 1,
+      itens: 2,
+    });
+    expect(reviewTotal([withQuantidade(arrozLine, "0,4")])).toEqual({
+      kcal: 0,
+      contados: 1,
+      itens: 1,
+    });
+  });
+
+  it("primeiro item pendente e número com 2 dígitos", () => {
+    expect(firstPendingIndex([arrozLine, ovoLine, nadaLine])).toBe(2);
+    expect(firstPendingIndex([arrozLine, { ...nadaLine, removido: true }])).toBe(-1);
+    expect(firstPendingIndex([withQuantidade(arrozLine, ""), nadaLine])).toBe(0);
+    expect(itemNumber(0)).toBe("01");
+    expect(itemNumber(11)).toBe("12");
+  });
+
+  it("unitChoices: só g sem porção; g + a unidade de porção falada", () => {
+    expect(unitChoices(arrozLine)).toEqual(["g"]);
+    expect(unitChoices(ovoLine)).toEqual(["g", "unidade"]);
+    expect(unitChoices(withUnidade(ovoLine, "g"))).toEqual(["g", "unidade"]);
+    expect(unitChoices({ ...ovoLine, unidade: "scoop" })).toEqual(["g", "scoop"]);
+  });
+});
+
+describe("formatKcalMilhar", () => {
+  it.each([
+    [0, "0"],
+    [256, "256"],
+    [1215, "1.215"],
+    [2000, "2.000"],
+    [1234567, "1.234.567"],
+  ])("%d → %s", (n, texto) => {
+    expect(formatKcalMilhar(n)).toBe(texto);
   });
 });

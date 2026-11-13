@@ -87,8 +87,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const persist = useCallback(
     async (auth: AuthResponse) => {
-      await SecureStore.setItemAsync(SESSION_STORAGE_KEY, JSON.stringify(auth));
       apply(auth);
+      try {
+        await SecureStore.setItemAsync(SESSION_STORAGE_KEY, JSON.stringify(auth));
+      } catch {
+        // Sem armazenamento seguro: a sessão fica só em memória (pede login ao reabrir o app).
+      }
     },
     [apply],
   );

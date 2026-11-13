@@ -11,5 +11,5 @@
 
 ## Fila
 
-> **Vazia.** MVP (T-001 a T-014) e T-017 integrados na branch de trabalho. Próximos candidatos no
-> `BACKLOG.md`; a verificação no aparelho (nível 4) está no `TODO-HUMAN.md` (H-010).
+> **Vazia.** Onda 2 (handoff do visual D: T-018 a T-024) integrada. O que falta é humano: H-010
+> (ver no aparelho), H-011 (apagar transcrição → T-025), H-014 (web → F-7/F-8). Candidatos no `BACKLOG.md`.

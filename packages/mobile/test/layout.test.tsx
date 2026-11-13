@@ -1,4 +1,5 @@
-import { userEvent } from "@testing-library/react-native";
+import { userEvent, waitFor } from "@testing-library/react-native";
+import { useFonts } from "expo-font";
 import { renderRouter, screen } from "expo-router/testing-library";
 import * as SecureStore from "expo-secure-store";
 import { Text } from "react-native";
@@ -29,6 +30,7 @@ const rotas = {
 describe("RootLayout (gate de autenticação)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.mocked(useFonts).mockReturnValue([true, null]);
   });
 
   it("sem sessão salva, abrir o app leva para /login", async () => {
@@ -72,10 +74,31 @@ describe("RootLayout (gate de autenticação)", () => {
 
     await user.type(await screen.findByLabelText("E-mail"), "teste@exemplo.com");
     await user.type(screen.getByLabelText("Senha"), "senha-teste-123");
-    await user.press(screen.getByRole("button", { name: "Entrar" }));
+    await user.press(screen.getByRole("button", { name: /entrar/i }));
 
     expect(await screen.findByText("tela inicial")).toBeOnTheScreen();
     expect(router.getPathname()).toBe("/");
+  });
+
+  it("enquanto as fontes carregam, segura o indicador e não mostra tela", async () => {
+    getItem.mockResolvedValue(null);
+    jest.mocked(useFonts).mockReturnValue([false, null]);
+    await renderRouter(rotas, { initialUrl: "/" });
+
+    await waitFor(() => expect(getItem).toHaveBeenCalled());
+    // A sessão resolve logo; mesmo assim a tela não aparece enquanto a fonte não carregou.
+    await expect(screen.findByText("tela de login", {}, { timeout: 300 })).rejects.toThrow();
+    expect(useFonts).toHaveBeenCalledWith(
+      expect.objectContaining({ Archivo_900Black: expect.anything() }),
+    );
+  });
+
+  it("se a fonte falhar, segue com a fonte do sistema em vez de travar", async () => {
+    getItem.mockResolvedValue(null);
+    jest.mocked(useFonts).mockReturnValue([false, new Error("falha de fonte")]);
+    await renderRouter(rotas, { initialUrl: "/" });
+
+    expect(await screen.findByText("tela de login")).toBeOnTheScreen();
   });
 
   it("sessão salva corrompida é tratada como sem sessão", async () => {
