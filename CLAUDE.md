@@ -25,11 +25,12 @@ CI em `.github/workflows/ci.yml` (push e PR): `install --frozen-lockfile`, `lint
 biome.json · tsconfig.base.json (strict) · pnpm-workspace.yaml · .env.example
 packages/
   shared/    @kcal/shared    — schemas Zod/tipos; src/, test/, jest (ts-jest)
-  rest-api/  @kcal/rest-api  — Hono; src/app.ts (app), src/server.ts (porta), test/ via app.request
+  rest-api/  @kcal/rest-api  — Hono; createApp({db,jwtSecret}); src/env.ts; routes/ + middleware/require-user.ts; README com os endpoints
   db/        @kcal/db        — Drizzle + better-sqlite3; createDb({path}); migrations/ versionado (pnpm --filter @kcal/db db:generate)
   nutrition-core/ @kcal/nutrition-core — funções puras de macros (gramsFromQuantity, macrosForGrams, sumMacros, formatMacros)
   stt/       @kcal/stt       — transcribe() Whisper (fetch injetado) + createFakeTranscriber
   llm/       @kcal/llm       — createItemExtractor({client}) com Claude Haiku 5.5, saída estruturada Zod
+  auth-core/ @kcal/auth-core — scrypt + JWT (jose v5); registerUser, authenticate, signSession, verifySession
   mobile/    @kcal/mobile    — Expo SDK 58 + Expo Router (src/app/), expo-audio; jest-expo + RNTL
 ```
 

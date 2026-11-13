@@ -11,25 +11,8 @@
 
 ## Fila
 
-### T-005 — `auth-core` + rotas de cadastro/login + bootstrap da API
-- **Status**: EM_ANDAMENTO · **Complexidade**: alta · **Depende de**: T-003 (feita)
-- **Objetivo**: `packages/auth-core` (`@kcal/auth-core`): `hashPassword`/`verifyPassword`
-  (`scrypt` do Node, salt aleatório, comparação em tempo constante), `registerUser(db, {email,
-  nome, senha})`, `authenticate(db, {email, senha})`, `signSession({userId}, secret)` /
-  `verifySession(token, secret)` (JWT HS256 com `jose`, 30 dias). Na `rest-api`:
-  `createApp({ db, jwtSecret })` substitui o `app` fixo; `server.ts` lê `DB_PATH`, `JWT_SECRET`,
-  `PORT` do env (`dotenv` só no server); rotas `POST /auth/register`, `POST /auth/login`
-  (Zod no body, schemas em `@kcal/shared`), `GET /me`; middleware `requireUser` que lê
-  `Authorization: Bearer` e põe `userId` no contexto. Erros → 400/401/409 com `{erro}` em pt-BR.
-- **Propósito**: toda rota de dado futura só chama `requireUser` e recebe `userId`.
-- **Fora de escopo**: reset de senha, refresh token, rate limit, UI.
-- **Critério de aceite**: `pnpm --filter @kcal/auth-core test` e `pnpm --filter @kcal/rest-api
-  test` verdes: hash ≠ senha e verifica; senha errada falha; e-mail duplicado → 409; login →
-  token; `GET /me` sem token → 401, com token → `{id, email, nome}`; token de outro segredo → 401.
-- **Verificação**: 1.
-
 ### T-006 — `foods-core` + rotas: listar, cadastrar e casar alimento por nome
-- **Status**: PENDENTE · **Complexidade**: alta · **Depende de**: T-002, T-005
+- **Status**: EM_ANDAMENTO · **Complexidade**: alta · **Depende de**: T-002, T-005
 - **Objetivo**: `packages/foods-core` (`@kcal/foods-core`), `db` injetado, uma função por arquivo:
   `listFoods(db, userId, {q?})` (padrões + os da pessoa, nunca de outra; filtro por nome/apelido),
   `createFood(db, userId, input)`, `updateFood(db, userId, foodId, patch)` (só os próprios; 404
@@ -48,7 +31,7 @@
 - **Verificação**: 1.
 
 ### T-007 — `goals-core` + rotas: meta diária
-- **Status**: PENDENTE · **Complexidade**: média · **Depende de**: T-005
+- **Status**: EM_ANDAMENTO · **Complexidade**: média · **Depende de**: T-005
 - **Objetivo**: `packages/goals-core` (`@kcal/goals-core`): `setGoal(db, userId, {kcal,
   proteinaG, carboG, gorduraG, vigenteDesde?})` (insere nova linha; histórico preservado),
   `getGoalForDate(db, userId, data)` (a vigente mais recente ≤ data; null se nenhuma).

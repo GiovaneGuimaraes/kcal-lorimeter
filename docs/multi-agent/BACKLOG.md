@@ -10,12 +10,10 @@
 
 ## Roadmap do MVP (ordem sugerida)
 
-Funcionalidades F1–F8 de [`docs/PRODUTO.md`](../PRODUTO.md). T-001, T-003, T-004, T-009 e T-010 estão feitas; T-002 e T-005 estão no `TODO-AI.md`.
+Funcionalidades F1–F8 de [`docs/PRODUTO.md`](../PRODUTO.md). T-001 a T-005, T-009 e T-010 estão feitas; T-006 e T-007 estão no `TODO-AI.md`.
 
 | Id | Item | Complexidade | Falta para ficar pronto |
 |---|---|---|---|
-| T-006 | **`foods-core` + rotas** (F3/F4): listar padrões + da pessoa, criar/editar próprio, `matchFood(text)` (nome, apelidos, depois aproximado) | alta | T-002, T-005 |
-| T-007 | **`goals-core` + rotas** (F2): CRUD da meta diária | média | T-005 |
 | T-008 | **`entries-core` + rotas** (F6/F7): criar/editar/apagar lançamento com snapshot; totais do dia × meta | alta | T-004, T-006, T-007 |
 | T-011 | **`voice-core` + rota de upload** (F5): áudio → STT → extração → casamento → `voice_log` pendente; apaga o áudio | alta | T-006, T-009, T-010 |
 | T-012 | **App: login + gravar áudio** (`expo-audio`, permissão, limite de duração, upload) | alta | T-005, T-011 |
