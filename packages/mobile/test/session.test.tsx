@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from "@testing-library/react-native";
+import { act, renderHook, waitFor } from "@testing-library/react-native";
 import * as SecureStore from "expo-secure-store";
 import { ApiError, apiRequest } from "../src/api/client";
 import { SESSION_STORAGE_KEY, SessionProvider, useSession } from "../src/auth/session";
@@ -32,7 +32,9 @@ describe("SessionProvider", () => {
     await waitFor(() => expect(result.current.status).toBe("signedIn"));
 
     mockFetch().mockResolvedValue(jsonResponse(401, { erro: "Sessão expirada" }));
-    await expect(apiRequest("/me")).rejects.toEqual(new ApiError(401, "Sessão expirada"));
+    await act(() =>
+      expect(apiRequest("/me")).rejects.toEqual(new ApiError(401, "Sessão expirada")),
+    );
 
     await waitFor(() => expect(result.current.status).toBe("signedOut"));
     expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith(SESSION_STORAGE_KEY);
@@ -43,7 +45,7 @@ describe("SessionProvider", () => {
     const { result } = await renderHook(() => useSession(), { wrapper: SessionProvider });
     await waitFor(() => expect(result.current.status).toBe("signedIn"));
 
-    await result.current.signOut();
+    await act(() => result.current.signOut());
 
     await waitFor(() => expect(result.current.status).toBe("signedOut"));
     expect(result.current.token).toBeNull();
