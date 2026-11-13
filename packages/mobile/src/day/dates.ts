@@ -76,3 +76,33 @@ export function formatDayLabel(iso: string, hoje: string): string {
   const texto = `${DIAS_SEMANA[d.getUTCDay()]}, ${d.getUTCDate()} de ${MESES[d.getUTCMonth()]}`;
   return iso.slice(0, 4) === hoje.slice(0, 4) ? texto : `${texto} de ${iso.slice(0, 4)}`;
 }
+
+const DIAS_SEMANA_CURTOS = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"];
+const MESES_CURTOS = [
+  "JAN",
+  "FEV",
+  "MAR",
+  "ABR",
+  "MAI",
+  "JUN",
+  "JUL",
+  "AGO",
+  "SET",
+  "OUT",
+  "NOV",
+  "DEZ",
+];
+
+/**
+ * Rótulo curto do dia para a navegação do painel (visual D, maiúsculas): "HOJE · SEX 13 NOV",
+ * "ONTEM · QUI 12 NOV", "QUA 11 NOV" (com o ano quando não é o de `hoje`: "QUA 31 DEZ 2025").
+ * Nomes fixos, sem `Intl`.
+ */
+export function formatDayShortLabel(iso: string, hoje: string): string {
+  const d = toUtc(iso);
+  let curto = `${DIAS_SEMANA_CURTOS[d.getUTCDay()]} ${d.getUTCDate()} ${MESES_CURTOS[d.getUTCMonth()]}`;
+  if (iso.slice(0, 4) !== hoje.slice(0, 4)) curto += ` ${iso.slice(0, 4)}`;
+  const diff = daysBetween(hoje, iso);
+  const relativo = diff === 0 ? "HOJE" : diff === -1 ? "ONTEM" : diff === 1 ? "AMANHÃ" : null;
+  return relativo ? `${relativo} · ${curto}` : curto;
+}
