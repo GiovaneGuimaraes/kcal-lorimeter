@@ -1,0 +1,21 @@
+{
+  "name": "@kcal/rest-api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "commonjs",
+  "main": "./dist/server.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsx watch --conditions=source src/server.ts",
+    "start": "node dist/server.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.0",
+    "@kcal/shared": "workspace:*",
+    "hono": "^4.10.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.0"
+  }
+}

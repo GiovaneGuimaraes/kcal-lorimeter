@@ -1,0 +1,31 @@
+# dependências
+node_modules/
+
+# build e testes
+dist/
+*.tsbuildinfo
+coverage/
+
+# Expo / Metro
+.expo/
+web-build/
+expo-env.d.ts
+.metro-health-check*
+# pastas nativas geradas (Continuous Native Generation)
+packages/mobile/ios/
+packages/mobile/android/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.pem
+
+# segredos e dados locais
+.env
+.env*.local
+data/*.sqlite*
+
+# sistema / logs
+.DS_Store
+npm-debug.*
