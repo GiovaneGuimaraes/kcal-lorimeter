@@ -16,6 +16,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { errorMessage } from "../api/client";
 import { sendVoiceAudio, sendVoiceText } from "../api/voice";
 import { useSession } from "../auth/session";
+import { DayPanel } from "../day/day-panel";
 import { Button, colors, ErrorMessage, Field } from "../ui/components";
 import { useReview } from "../voice/review-store";
 import {
@@ -25,6 +26,7 @@ import {
   useVoiceRecorder,
 } from "../voice/use-voice-recorder";
 
+/** Tela inicial: gravar/digitar o que comeu (ação principal) e, abaixo, o painel do dia. */
 export default function HomeScreen() {
   const { user, signOut } = useSession();
   const { setReview } = useReview();
@@ -132,6 +134,8 @@ export default function HomeScreen() {
             </View>
           ) : null}
           <ErrorMessage>{erro}</ErrorMessage>
+
+          <DayPanel />
         </ScrollView>
       </KeyboardAvoidingView>
       <StatusBar style="auto" />

@@ -22,6 +22,8 @@ const rotas = {
   login: () => <Text>tela de login</Text>,
   cadastro: () => <Text>tela de cadastro</Text>,
   revisao: () => <Text>tela de revisão</Text>,
+  meta: () => <Text>tela de meta</Text>,
+  lancamento: () => <Text>tela de lançamento</Text>,
 };
 
 describe("RootLayout (gate de autenticação)", () => {
@@ -41,6 +43,14 @@ describe("RootLayout (gate de autenticação)", () => {
   it("sem sessão, /revisao também cai no /login", async () => {
     getItem.mockResolvedValue(null);
     const router = await renderRouter(rotas, { initialUrl: "/revisao" });
+
+    expect(await screen.findByText("tela de login")).toBeOnTheScreen();
+    expect(router.getPathname()).toBe("/login");
+  });
+
+  it.each(["/meta", "/lancamento"])("sem sessão, %s também cai no /login", async (url) => {
+    getItem.mockResolvedValue(null);
+    const router = await renderRouter(rotas, { initialUrl: url });
 
     expect(await screen.findByText("tela de login")).toBeOnTheScreen();
     expect(router.getPathname()).toBe("/login");
