@@ -18,6 +18,7 @@ aqui o que **muda uma decisão futura** de roteamento; o resto vai no corpo da P
 | T-006 foods | alta | Opus 5.5 | 1 | 0 — 3 sugestões (falso positivo por trigramas) |
 | T-008 entries | alta | Opus 5.5 | 1 | 0 — 3 sugestões (semântica do PATCH documentada) |
 | T-011 voice | alta | Opus 5.5 | 1 | 0 — 2 sugestões (log com causa sensível, corrigido inline) |
+| T-012 app login/gravação | alta | Opus 5.5 | 1 | 0 — nível 4 pendente |
 
 ## Onde as reprovações caem
 
