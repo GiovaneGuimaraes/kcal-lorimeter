@@ -11,21 +11,6 @@
 
 ## Fila
 
-### T-013 — App: tela de revisão e confirmação
-- **Status**: EM_ANDAMENTO · **Complexidade**: alta · **Depende de**: T-008, T-012
-- **Objetivo**: rota `/revisao`: lista os itens do `VoiceReview` com o que foi entendido
-  (transcrição no topo), por item: alimento casado (ou escolher entre candidatos, ou buscar
-  `GET /foods?q=`, ou cadastrar novo via `POST /foods` com macros por 100 g), quantidade/unidade
-  editáveis, pedir peso quando `precisaPeso`, refeição (default pela hora), remover item.
-  **Confirmar** cria um `POST /entries` por item com `voiceLogId` e `origem` voz/texto, depois
-  navega ao painel. **Descartar** → `POST /voice/:id/discard`.
-- **Propósito**: "nada é salvo sem confirmação" (PRODUTO.md); é a tela principal.
-- **Fora de escopo**: edição de lançamentos já salvos (T-014), favoritos.
-- **Critério de aceite**: RNTL verde: item `none` mostra "cadastrar"; escolher candidato troca o
-  alimento; confirmar chama `POST /entries` N vezes com o payload certo (fetch mockado); item
-  sem peso bloqueia confirmar com mensagem.
-- **Verificação**: 4 — humano: fluxo completo gravar → revisar → confirmar → ver no painel.
-
 ### T-014 — App: painel do dia, histórico e lançamento manual
 - **Status**: EM_ANDAMENTO · **Complexidade**: média · **Depende de**: T-008, T-012
 - **Objetivo**: tela inicial vira o painel: `GET /days/:data` → kcal e macros consumidos × meta

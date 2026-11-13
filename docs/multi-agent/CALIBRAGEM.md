@@ -19,6 +19,7 @@ aqui o que **muda uma decisão futura** de roteamento; o resto vai no corpo da P
 | T-008 entries | alta | Opus 5.5 | 1 | 0 — 3 sugestões (semântica do PATCH documentada) |
 | T-011 voice | alta | Opus 5.5 | 1 | 0 — 2 sugestões (log com causa sensível, corrigido inline) |
 | T-012 app login/gravação | alta | Opus 5.5 | 1 | 0 — nível 4 pendente |
+| T-013 app revisão | alta | Opus 5.5 | 1 | 0 — 3 sugestões; achou 2 lacunas de contrato (T-017) |
 
 ## Onde as reprovações caem
 
