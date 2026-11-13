@@ -1,6 +1,6 @@
 import path from "node:path";
 import { serve } from "@hono/node-server";
-import { createDb } from "@kcal/db";
+import { createDb, seedDefaultFoods } from "@kcal/db";
 import { config } from "dotenv";
 import { createApp } from "./app";
 import { ensureDbDir, InvalidEnvError, loadEnv } from "./env";
@@ -26,6 +26,9 @@ function main(): void {
 
   ensureDbDir(env.dbPath);
   const handle = createDb({ path: env.dbPath });
+  // Idempotente: só insere os alimentos padrão que ainda não estão no banco.
+  const seed = seedDefaultFoods(handle.db);
+  console.log(`alimentos padrão: ${seed.inserted} inseridos`);
   const app = createApp({ db: handle.db, jwtSecret: env.jwtSecret });
 
   const server = serve({ fetch: app.fetch, port: env.port }, (info) => {

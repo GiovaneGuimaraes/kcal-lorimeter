@@ -1,6 +1,8 @@
 import { type ErrorResponse, type HealthResponse, HealthResponseSchema } from "@kcal/shared";
 import { Hono } from "hono";
 import { authRoutes } from "./routes/auth";
+import { daysRoutes } from "./routes/days";
+import { entriesRoutes } from "./routes/entries";
 import { goalsRoutes } from "./routes/goals";
 import { foodsRoutes } from "./routes/foods";
 import { meRoutes } from "./routes/me";
@@ -22,6 +24,8 @@ export function createApp(deps: AppDeps): Hono {
   app.route("/me", meRoutes(deps));
   app.route("/goals", goalsRoutes(deps));
   app.route("/foods", foodsRoutes(deps));
+  app.route("/entries", entriesRoutes(deps));
+  app.route("/days", daysRoutes(deps));
 
   app.notFound((c) => c.json<ErrorResponse>({ erro: "Rota não encontrada" }, 404));
 
