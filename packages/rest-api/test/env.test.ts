@@ -68,3 +68,20 @@ describe("ensureDbDir", () => {
     expect(() => ensureDbDir(":memory:")).not.toThrow();
   });
 });
+
+describe("loadEnv — chaves de STT/LLM", () => {
+  it("são opcionais: ausentes ou vazias ficam fora do resultado", () => {
+    const env = loadEnv({ JWT_SECRET: SECRET, OPENAI_API_KEY: "", ANTHROPIC_API_KEY: " " }, BASE);
+    expect(env).not.toHaveProperty("openaiApiKey");
+    expect(env).not.toHaveProperty("anthropicApiKey");
+  });
+
+  it("lê as duas quando definidas", () => {
+    expect(
+      loadEnv(
+        { JWT_SECRET: SECRET, OPENAI_API_KEY: "chave-falsa-1", ANTHROPIC_API_KEY: "chave-falsa-2" },
+        BASE,
+      ),
+    ).toMatchObject({ openaiApiKey: "chave-falsa-1", anthropicApiKey: "chave-falsa-2" });
+  });
+});

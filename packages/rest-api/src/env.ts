@@ -27,6 +27,8 @@ const EnvSchema = z.object({
       .max(65535, { error: PORT_ERROR })
       .default(3000),
   ),
+  OPENAI_API_KEY: z.preprocess(emptyToUndefined, z.string().trim().optional()),
+  ANTHROPIC_API_KEY: z.preprocess(emptyToUndefined, z.string().trim().optional()),
 });
 
 export interface ServerEnv {
@@ -34,6 +36,10 @@ export interface ServerEnv {
   dbPath: string;
   jwtSecret: string;
   port: number;
+  /** Chave do STT (OpenAI). Opcional: sem ela, `POST /voice` responde 503. */
+  openaiApiKey?: string;
+  /** Chave da extração (Anthropic). Opcional: sem ela, `/voice` e `/voice/text` respondem 503. */
+  anthropicApiKey?: string;
 }
 
 /** Variável de ambiente ausente ou inválida. A mensagem já diz o que corrigir. */
@@ -52,9 +58,15 @@ export function loadEnv(env: NodeJS.ProcessEnv, baseDir: string): ServerEnv {
     throw new InvalidEnvError(`Configuração inválida da rest-api:\n${msgs}`);
   }
 
-  const { DB_PATH, JWT_SECRET, PORT } = parsed.data;
+  const { DB_PATH, JWT_SECRET, PORT, OPENAI_API_KEY, ANTHROPIC_API_KEY } = parsed.data;
   const dbPath = DB_PATH === ":memory:" ? DB_PATH : path.resolve(baseDir, DB_PATH);
-  return { dbPath, jwtSecret: JWT_SECRET, port: PORT };
+  return {
+    dbPath,
+    jwtSecret: JWT_SECRET,
+    port: PORT,
+    ...(OPENAI_API_KEY ? { openaiApiKey: OPENAI_API_KEY } : {}),
+    ...(ANTHROPIC_API_KEY ? { anthropicApiKey: ANTHROPIC_API_KEY } : {}),
+  };
 }
 
 /** Cria a pasta do arquivo SQLite se ainda não existir. */

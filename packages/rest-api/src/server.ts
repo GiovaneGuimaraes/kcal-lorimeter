@@ -4,6 +4,7 @@ import { createDb } from "@kcal/db";
 import { config } from "dotenv";
 import { createApp } from "./app";
 import { ensureDbDir, InvalidEnvError, loadEnv } from "./env";
+import { createVoiceProviders } from "./voice-providers";
 
 // Raiz do repo: tanto `src/` (dev) quanto `dist/` (build) ficam em packages/rest-api/<pasta>.
 const REPO_ROOT = path.resolve(__dirname, "..", "..", "..");
@@ -26,7 +27,8 @@ function main(): void {
 
   ensureDbDir(env.dbPath);
   const handle = createDb({ path: env.dbPath });
-  const app = createApp({ db: handle.db, jwtSecret: env.jwtSecret });
+  const voice = createVoiceProviders(env);
+  const app = createApp({ db: handle.db, jwtSecret: env.jwtSecret, voice });
 
   const server = serve({ fetch: app.fetch, port: env.port }, (info) => {
     console.log(`rest-api ouvindo em http://localhost:${info.port}`);

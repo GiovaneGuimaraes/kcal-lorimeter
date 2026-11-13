@@ -176,9 +176,18 @@ importers:
       '@kcal/goals-core':
         specifier: workspace:*
         version: link:../goals-core
+      '@kcal/llm':
+        specifier: workspace:*
+        version: link:../llm
       '@kcal/shared':
         specifier: workspace:*
         version: link:../shared
+      '@kcal/stt':
+        specifier: workspace:*
+        version: link:../stt
+      '@kcal/voice-core':
+        specifier: workspace:*
+        version: link:../voice-core
       dotenv:
         specifier: ^17.4.2
         version: 17.4.2

@@ -16,7 +16,10 @@
     "@kcal/db": "workspace:*",
     "@kcal/goals-core": "workspace:*",
     "@kcal/foods-core": "workspace:*",
+    "@kcal/llm": "workspace:*",
     "@kcal/shared": "workspace:*",
+    "@kcal/stt": "workspace:*",
+    "@kcal/voice-core": "workspace:*",
     "dotenv": "^17.4.2",
     "hono": "^4.10.0",
     "zod": "^4.6.7"
