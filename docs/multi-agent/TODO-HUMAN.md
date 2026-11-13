@@ -26,6 +26,23 @@
 
 ## Abertos
 
+### [2026-11-12] H-010 — Testar a primeira versão no aparelho (verificação nível 4)
+- **Origem**: orquestrador (T-012, T-013, T-014)
+- **Bloqueia**: nada no código. É o que falta para o MVP ser "visto funcionando".
+- **Pergunta**: rodar o fluxo completo no Expo Go e dizer o que quebrou. Passos:
+  1. Raiz: `cp .env.example .env`, preencher `JWT_SECRET` (≥ 32 chars), `OPENAI_API_KEY` e
+     `ANTHROPIC_API_KEY` (H-008). `pnpm install && pnpm dev:api`.
+  2. `ipconfig` → IP da máquina. `packages/mobile/.env` com `EXPO_PUBLIC_API_URL=http://<IP>:3000`.
+     Liberar a porta 3000 no firewall. Celular e PC na mesma rede. Teste no navegador do celular:
+     `http://<IP>:3000/health`.
+  3. `pnpm --filter @kcal/mobile start` e abrir no Expo Go.
+  4. Criar conta → definir meta → gravar "duzentos gramas de arroz e um scoop de whey" → revisar
+     (o whey do seed tem porção de 30 g; um alimento sem porção pede o peso) → confirmar → ver o
+     painel. Depois: lançar manualmente, editar gramas, apagar, navegar para ontem, sair e entrar.
+- **Recomendação**: anotar cada tela que não bater com o esperado; vira tarefa com brief.
+- **Resposta do humano**: _(preencher)_
+
+
 ### [2026-11-12] H-009 — Conferir os valores do seed de alimentos contra a TACO
 - **Origem**: orquestrador (T-002)
 - **Bloqueia**: nada no código. Bloqueia a confiança nos números que o app mostra.

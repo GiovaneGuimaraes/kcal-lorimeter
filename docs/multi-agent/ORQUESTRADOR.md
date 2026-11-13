@@ -9,23 +9,17 @@ Contador de calorias por voz: a pessoa grava o que comeu, o app transcreve, extr
 com a base de alimentos, pede confirmação e soma os macros do dia. Detalhe em
 [`docs/PRODUTO.md`](../PRODUTO.md); regras técnicas em [`CLAUDE.md`](../../CLAUDE.md).
 
-## Estado atual (2026-11-12 — fase 1, back-end do MVP pronto)
+## Estado atual (2026-11-12 — primeira versão integrada)
 
 > Substitua esta seção a cada ciclo; não acumule. O que foi feito vive nas PRs e no git.
 
-- **Feito e integrado na branch de trabalho** (`GiovaneGuimaraes/kcal-lorimeter`): T-001 scaffold,
-  T-003 db, T-004 nutrition-core, T-009 stt, T-010 llm, T-002 seed, T-005 auth, T-006 foods,
-  T-007 goals, T-008 entries, T-011 voice. API completa: /auth, /me, /foods, /goals, /entries,
-  /days/:data, /voice. 12 packages, ~460 testes, lint/format/build verdes.
-- **Em andamento**: T-012 (app: login + gravação). Depois: T-013 (revisão) e T-014 (painel) em
-  paralelo. Ambas são verificação nível 4 (humano no aparelho).
-- **Integração** (H-006): o orquestrador mergeia as branches aprovadas aqui; a PR para a `main`
-  é do humano.
-- **Pendências abertas**: H-009 (conferir seed TACO), H-008 (chaves de API para testar voz de
-  verdade), H-007 (contas de distribuição). Nenhuma bloqueia código.
-- **Lição desta fase**: todas as 11 tarefas aprovaram em 1 ciclo; o custo real foi conflito de
-  merge trivial (app.ts, shared/index.ts, lockfile) entre executores paralelos — resolver com
-  "ambos os lados" + `pnpm install` e regenerar o lock.
+- **MVP implementado** (T-001 a T-014 + T-017) e integrado na branch de trabalho
+  `GiovaneGuimaraes/kcal-lorimeter`. 12 packages, 561 testes, lint/format/build verdes. Smoke da
+  API integrada feito pelo orquestrador (register → meta → lançamento → painel → voz sem chave → 503).
+- **Fila vazia.** O que falta é humano: H-010 (testar no aparelho), H-009 (conferir seed TACO),
+  H-008 (chaves), H-007 (contas de distribuição), e abrir a PR desta branch para a `main` (H-006).
+- **Próximo ciclo**: promover do `BACKLOG` o que o teste no aparelho revelar; depois T-016
+  (EAS) quando H-007 for respondida.
 
 ## Como operar
 

@@ -21,9 +21,15 @@ aqui o que **muda uma decisão futura** de roteamento; o resto vai no corpo da P
 | T-012 app login/gravação | alta | Opus 5.5 | 1 | 0 — nível 4 pendente |
 | T-013 app revisão | alta | Opus 5.5 | 1 | 0 — 3 sugestões; achou 2 lacunas de contrato (T-017) |
 | T-014 app painel | média | Opus 5.5 | 1 | 0 — 3 sugestões |
+| T-017 voice_log confirmado | média | Sonnet 5.5 | 1 | 0 |
 
 ## Onde as reprovações caem
 
+> **Dado real (2026-11-12, 15 tarefas, 15 ciclos, 0 reprovações).** Nenhuma reprovação; o custo foi
+> conflito trivial de merge entre executores paralelos e dois achados de contrato entre packages
+> (T-013 → T-017), que o revisor de uma tarefa isolada não vê. Hipótese original abaixo ainda não
+> testada: as telas de gravação/revisão só foram verificadas com mocks (nível 4 pendente, H-010).
+>
 > Preencher a partir das reprovações reais. No vetor-wallet, depois de 20 ciclos, **nenhuma**
 > reprovação caiu em cálculo — todas caíram em **estado assíncrono, gates de render e consistência
 > entre N arquivos**, onde lint, build e suíte passam verdes com o código errado. A hipótese para

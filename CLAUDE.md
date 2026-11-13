@@ -7,7 +7,7 @@ trabalho é feito: [`docs/multi-agent/README.md`](docs/multi-agent/README.md).
 
 ## Estado
 
-**Scaffold pronto (T-001).** Monorepo pnpm (Node 22+, pnpm 10), comandos na raiz:
+**Primeira versão do MVP integrada (T-001 a T-014, T-017).** Monorepo pnpm (Node 22+, pnpm 10), comandos na raiz:
 
 | Comando | O que faz |
 |---|---|
