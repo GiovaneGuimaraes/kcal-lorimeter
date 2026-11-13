@@ -26,6 +26,19 @@
 
 ## Abertos
 
+### [2026-11-12] H-009 — Conferir os valores do seed de alimentos contra a TACO
+- **Origem**: orquestrador (T-002)
+- **Bloqueia**: nada no código. Bloqueia a confiança nos números que o app mostra.
+- **Pergunta**: o executor escreveu os 46 alimentos de `packages/db/src/seed/default-foods.ts`
+  citando "TACO 4ª ed." mas **de memória**, sem consultar a tabela. O revisor confere uma amostra
+  pela web. Mesmo assim, os números precisam de conferência humana contra a TACO (NEPA/Unicamp,
+  tabela pública) antes de o app ser usado de verdade. Itens que o executor marcou como mais
+  incertos: abóbora cabotian, chuchu, uva Itália, manga Tommy, amendoim torrado, queijo minas.
+- **Recomendação**: abrir a TACO e conferir item a item (30–40 min); corrigir no arquivo e abrir
+  PR, ou me passar as correções que eu aplico. Alternativa: reduzir o seed aos ~15 itens que você
+  conferiu e deixar o resto para cadastro da pessoa.
+- **Resposta do humano**: _(preencher)_
+
 ### [2026-11-12] H-008 — Chaves de API para testar voz de verdade
 - **Origem**: orquestrador
 - **Bloqueia**: nada no código (STT e LLM são mockados nos testes). Bloqueia só o teste **real**
