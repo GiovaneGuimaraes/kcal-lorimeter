@@ -1,0 +1,30 @@
+{
+  "name": "@kcal/entries-core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "commonjs",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@kcal/db": "workspace:*",
+    "@kcal/foods-core": "workspace:*",
+    "@kcal/goals-core": "workspace:*",
+    "@kcal/nutrition-core": "workspace:*",
+    "@kcal/shared": "workspace:*",
+    "drizzle-orm": "^0.45.4"
+  },
+  "devDependencies": {
+    "zod": "^4.6.7"
+  }
+}
