@@ -27,6 +27,18 @@ importers:
         specifier: ~6.0.3
         version: 6.0.3
 
+  packages/auth-core:
+    dependencies:
+      '@kcal/db':
+        specifier: workspace:*
+        version: link:../db
+      drizzle-orm:
+        specifier: ^0.45.4
+        version: 0.45.4(@opentelemetry/api@1.10.0)(@types/better-sqlite3@9.6.0)(better-sqlite3@13.1.1)
+      jose:
+        specifier: ^5.10.0
+        version: 5.10.0
+
   packages/db:
     dependencies:
       better-sqlite3:
@@ -124,12 +136,24 @@ importers:
       '@hono/node-server':
         specifier: ^1.19.0
         version: 1.19.19(hono@4.13.18)
+      '@kcal/auth-core':
+        specifier: workspace:*
+        version: link:../auth-core
+      '@kcal/db':
+        specifier: workspace:*
+        version: link:../db
       '@kcal/shared':
         specifier: workspace:*
         version: link:../shared
+      dotenv:
+        specifier: ^17.4.2
+        version: 17.4.2
       hono:
         specifier: ^4.10.0
         version: 4.13.18
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
     devDependencies:
       tsx:
         specifier: ^4.20.0
@@ -2591,6 +2615,10 @@ packages:
   dnssd-advertise@1.1.6:
     resolution: {integrity: sha512-Ndrrf6BMPalkQPd/zubL+4YghH2J9NspapQ09uDXwYbvOPkP0oaqf5CkcwJ0b50kS2O3ul6yVu+jz+RY62Cejg==}
 
+  dotenv@17.4.2:
+    resolution: {integrity: sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw==}
+    engines: {node: '>=12'}
+
   dotenv@18.0.10:
     resolution: {integrity: sha512-89FAA1xchzK2mxVWdr5F/0rldwiueXs6zJM86rO66EzekR1iBdiXRthyG+m5GvkJaFH3C2LESzamTkgndmLT2A==}
     engines: {node: '>=12'}
@@ -3427,6 +3455,9 @@ packages:
 
   jimp-compact@0.16.1:
     resolution: {integrity: sha512-dZ6Ra7u1G8c4Letq/B5EzAxj4tLFHL+cGtdpR+PVm4yzPDj+lCk+AbivWt1eOM+ikzkowtyV7qSqX6qr3t71Ww==}
+
+  jose@5.10.0:
+    resolution: {integrity: sha512-s+3Al/p9g32Iq+oqXxkW//7jk2Vig6FF1CFqzVXoTUXt2qz89YWbL+OwS17NFYEvxC35n0FKeGO2LGYSxeM2Gg==}
 
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
@@ -7268,6 +7299,8 @@ snapshots:
 
   dnssd-advertise@1.1.6: {}
 
+  dotenv@17.4.2: {}
+
   dotenv@18.0.10: {}
 
   drizzle-kit@0.31.11:
@@ -8336,6 +8369,8 @@ snapshots:
       - ts-node
 
   jimp-compact@0.16.1: {}
+
+  jose@5.10.0: {}
 
   js-tokens@4.0.0: {}
 
