@@ -26,80 +26,89 @@
 
 ## Abertos
 
-### [2026-11-08] H-006 — Quem faz o merge das PRs?
-- **Origem**: orquestrador (fase 0)
-- **Bloqueia**: nada agora — define o passo 5 do loop.
-- **Pergunta**: (a) **humano mergeia** toda PR; (b) **modo auto**: com revisor `APROVADA` + CI
-  verde, o orquestrador mergeia sozinho e o humano revisa depois; (c) auto só para docs/estilo
-  (complexidade baixa), humano no resto.
-- **Recomendação**: (a) até o CI existir (T-001) e rodar umas 5 PRs; depois (c) ou (b). Com o CI
-  vermelho bloqueando o merge (proteção da `main` no GitHub), o modo auto fica seguro.
+### [2026-11-12] H-010 — Testar a primeira versão no aparelho (verificação nível 4)
+- **Origem**: orquestrador (T-012, T-013, T-014)
+- **Bloqueia**: nada no código. É o que falta para o MVP ser "visto funcionando".
+- **Pergunta**: rodar o fluxo completo no Expo Go e dizer o que quebrou. Passos:
+  1. Raiz: `cp .env.example .env`, preencher `JWT_SECRET` (≥ 32 chars), `OPENAI_API_KEY` e
+     `ANTHROPIC_API_KEY` (H-008). `pnpm install && pnpm dev:api`.
+  2. `ipconfig` → IP da máquina. `packages/mobile/.env` com `EXPO_PUBLIC_API_URL=http://<IP>:3000`.
+     Liberar a porta 3000 no firewall. Celular e PC na mesma rede. Teste no navegador do celular:
+     `http://<IP>:3000/health`.
+  3. `pnpm --filter @kcal/mobile start` e abrir no Expo Go.
+  4. Criar conta → definir meta → gravar "duzentos gramas de arroz e um scoop de whey" → revisar
+     (o whey do seed tem porção de 30 g; um alimento sem porção pede o peso) → confirmar → ver o
+     painel. Depois: lançar manualmente, editar gramas, apagar, navegar para ontem, sair e entrar.
+- **Recomendação**: anotar cada tela que não bater com o esperado; vira tarefa com brief.
 - **Resposta do humano**: _(preencher)_
 
-### [2026-11-08] H-005 — De onde vêm os macros dos alimentos padrão?
-- **Origem**: orquestrador
-- **Bloqueia**: T-002
-- **Pergunta**: a base padrão precisa de uma fonte citável — o LLM não pode inventar os números.
-  Opções: **TACO** (Tabela Brasileira de Composição de Alimentos, Unicamp — pública, alimentos
-  brasileiros, mas não tem industrializados como whey); **USDA FoodData Central** (enorme, em
-  inglês, alimentos americanos); **rótulo** (para industrializado, varia por marca).
-- **Recomendação**: **TACO** para alimentos in natura/preparados; produtos industrializados
-  (whey, pasta de amendoim) entram como "genérico" com o valor médio de rótulo e fonte = "rótulo
-  médio", ou ficam de fora e a pessoa cadastra o da marca dela. Diga qual dos dois prefere para
-  industrializados.
+
+### [2026-11-12] H-009 — Conferir os valores do seed de alimentos contra a TACO
+- **Origem**: orquestrador (T-002)
+- **Bloqueia**: nada no código. Bloqueia a confiança nos números que o app mostra.
+- **Pergunta**: o executor escreveu os 46 alimentos de `packages/db/src/seed/default-foods.ts`
+  citando "TACO 4ª ed." mas **de memória**, sem consultar a tabela. O revisor confere uma amostra
+  pela web. Mesmo assim, os números precisam de conferência humana contra a TACO (NEPA/Unicamp,
+  tabela pública) antes de o app ser usado de verdade. Itens que o executor marcou como mais
+  incertos: abóbora cabotian, chuchu, uva Itália, manga Tommy, amendoim torrado, queijo minas.
+- **Recomendação**: abrir a TACO e conferir item a item (30–40 min); corrigir no arquivo e abrir
+  PR, ou me passar as correções que eu aplico. Alternativa: reduzir o seed aos ~15 itens que você
+  conferiu e deixar o resto para cadastro da pessoa.
 - **Resposta do humano**: _(preencher)_
 
-### [2026-11-08] H-004 — Banco, hospedagem e autenticação
+### [2026-11-12] H-008 — Chaves de API para testar voz de verdade
 - **Origem**: orquestrador
-- **Bloqueia**: T-001, T-003, T-005, T-015
-- **Pergunta**: (1) **Banco**: Postgres gerenciado (Supabase/Neon) ou SQLite/libSQL (Turso),
-  como no vetor-wallet? (2) **Hospedagem** da API e do front. (3) **Auth**: implementação própria
-  (e-mail + senha) ou provedor (Supabase Auth, Cognito, Clerk)? (4) O app é **só para você** no
-  começo ou já nasce **multiusuário** para terceiros (muda o peso de auth e LGPD)?
-- **Recomendação**: Postgres gerenciado (Supabase ou Neon, ambos com plano gratuito) + auth do
-  próprio provedor, multiusuário desde o schema (o `user_id` custa pouco agora e muito depois).
-  Hospedagem pode esperar o MVP rodar local.
+- **Bloqueia**: nada no código (STT e LLM são mockados nos testes). Bloqueia só o teste **real**
+  do lançamento por voz no aparelho.
+- **Pergunta**: crie um `.env` na raiz (a partir do `.env.example`) com `OPENAI_API_KEY`
+  (transcrição Whisper) e `ANTHROPIC_API_KEY` (extração com Claude Haiku 5.5). Ambas as contas
+  são pagas por uso; áudios de 10–30 s e prompts curtos custam centavos por mês.
+- **Recomendação**: criar as duas chaves com limite de gasto baixo no painel de cada provedor.
 - **Resposta do humano**: _(preencher)_
 
-### [2026-11-08] H-003 — Qual LLM extrai os itens da transcrição?
-- **Origem**: orquestrador
-- **Bloqueia**: T-010
-- **Pergunta**: a extração transforma "duzentos de arroz e um scoop de whey" em JSON estruturado.
-  É uma tarefa curta e barata. Opções: Claude (Haiku 5.5 ou Sonnet 5.5) com saída estruturada /
-  tool use; ou o mesmo provedor da transcrição, se for um só fornecedor.
-- **Recomendação**: **Claude Haiku 5.5** com tool use (schema do JSON validado no código),
-  escalando para Sonnet 5.5 só se a precisão nos testes com frases reais não bastar. Precisa de
-  uma chave da API da Anthropic no `.env` (você cria; nunca vai para o repo).
-- **Resposta do humano**: _(preencher)_
-
-### [2026-11-08] H-002 — Qual serviço transcreve o áudio (STT)?
-- **Origem**: orquestrador
-- **Bloqueia**: T-009 (e, por consequência, todo o lançamento por voz)
-- **Pergunta**: opções: (a) **API de transcrição hospedada** (família Whisper — OpenAI, Groq —
-  ou Deepgram): boa em pt-BR, custo por minuto, exige chave; (b) **Web Speech API do navegador**:
-  grátis, sem servidor, mas suporte e qualidade variam por navegador e não há áudio para
-  reprocessar; (c) **Whisper rodando por conta própria**: sem custo por uso, mas exige servidor com
-  GPU/CPU forte.
-- **Recomendação**: (a), atrás de uma interface `transcribe()` para poder trocar de provedor sem
-  mexer no resto. Os áudios são curtos (10–30 s), então o custo por pessoa/mês tende a ser baixo —
-  confira o preço atual do provedor escolhido. **E**: o áudio bruto é **apagado** logo após a
-  transcrição (guarda-se só o texto)? Recomendo que sim.
-- **Resposta do humano**: _(preencher)_
-
-### [2026-11-08] H-001 — Plataforma e stack do app
-- **Origem**: orquestrador
-- **Bloqueia**: T-001 (e, por consequência, toda a implementação)
-- **Pergunta**: onde a pessoa grava o áudio? (a) **PWA web** (Vite + React; abre no navegador
-  do celular, grava com `MediaRecorder`, pode ser "instalada" na tela inicial, sem loja de app);
-  (b) **app nativo** com React Native/Expo (gravação mais robusta em segundo plano, notificações,
-  mas exige build e publicação nas lojas); (c) **bot de WhatsApp/Telegram** (zero interface para
-  construir no começo; o áudio já é o jeito natural de mandar mensagem).
-  Back-end: monorepo pnpm + TypeScript + API REST + `*-core`, igual ao vetor-wallet?
-- **Recomendação**: **(a) PWA** + o mesmo desenho de monorepo do vetor-wallet (proposto em
-  `CLAUDE.md`). É o caminho mais curto até um MVP usável no celular, e os cores ficam reaproveitáveis
-  se um dia vier app nativo ou bot.
+### [2026-11-08] H-007 — Contas para distribuir o app (Expo, Apple, Google)
+- **Origem**: orquestrador (consequência da H-001)
+- **Bloqueia**: T-016 (build para instalar no aparelho). **Não** bloqueia o desenvolvimento: dá
+  para programar e testar com Expo Go e simulador sem nenhuma dessas contas.
+- **Pergunta**: (1) criar uma conta Expo (grátis) para o EAS Build; (2) **Apple Developer
+  Program** (pago, anual) — necessário para instalar build no iPhone fora do Expo Go e para
+  publicar na App Store; (3) **Google Play Console** (taxa única) — só para publicar na Play Store;
+  build Android interno (`.apk`) não precisa. Qual plataforma vem primeiro: iOS, Android ou as duas?
+- **Recomendação**: começar pela plataforma do seu celular, só com a conta Expo e build interno;
+  pagar loja só quando for abrir para outras pessoas. Confira os valores atuais nos sites.
 - **Resposta do humano**: _(preencher)_
 
 ## Resolvidos
 
-_(vazio)_
+### [2026-11-08] H-006 — Quem faz o merge das PRs?
+- **Resposta do humano (2026-11-12)**: pediu que o fluxo agêntico construísse a primeira versão.
+  Aplicado como: o orquestrador integra as branches aprovadas pelo revisor na branch de trabalho
+  `GiovaneGuimaraes/kcal-lorimeter`; a PR dessa branch para a `main` é mergeada **pelo humano**.
+  Quando a `main` tiver CI com proteção, reavaliar modo auto (opção b/c).
+
+### [2026-11-08] H-005 — De onde vêm os macros dos alimentos padrão?
+- **Resposta do humano (2026-11-12)**: ok — **TACO** para in natura/preparados; industrializado
+  genérico com fonte "rótulo médio". Aplicado em `CLAUDE.md` § Stack.
+
+### [2026-11-08] H-004 — Banco, hospedagem e autenticação
+- **Resposta do humano (2026-11-12)**: API **rodando localmente**; banco **SQLite local** enquanto
+  o app não cresce. Aplicado: `better-sqlite3` + Drizzle ORM (migrações versionadas), auth
+  **própria** (e-mail + senha com `scrypt`, JWT com `jose`), multiusuário desde o schema. Sem
+  hospedagem por ora. Ver `CLAUDE.md` § Stack.
+
+### [2026-11-08] H-003 — Qual LLM extrai os itens da transcrição?
+- **Resposta do humano (2026-11-12)**: ok — **Claude Haiku 5.5** (`claude-haiku-5-5`) com saída
+  estruturada validada por Zod. Chave em `.env` (H-008).
+
+### [2026-11-08] H-002 — Qual serviço transcreve o áudio (STT)?
+- **Resposta do humano (2026-11-12)**: ok — API hospedada (OpenAI Whisper) atrás de
+  `transcribe()`; áudio bruto apagado após a transcrição. Chave em `.env` (H-008).
+
+### [2026-11-08] H-001b — Back-end: monorepo pnpm + TypeScript igual ao vetor-wallet?
+- **Resposta do humano (2026-11-12)**: ok — monorepo pnpm + TS strict, `rest-api` fina (Hono),
+  `*-core` de domínio, integrações separadas. **Testes com Jest**, validação com Zod, lint com
+  Biome. Aplicado em `CLAUDE.md` § Stack.
+
+### [2026-11-08] H-001 — Plataforma do app
+- **Resposta do humano (2026-11-08)**: usar **[Expo](https://expo.dev/)** para a estrutura mobile.
+  Aplicado em `CLAUDE.md` § Stack (`packages/mobile`, Expo Router, `expo-audio`, EAS).

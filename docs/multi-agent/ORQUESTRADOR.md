@@ -9,17 +9,17 @@ Contador de calorias por voz: a pessoa grava o que comeu, o app transcreve, extr
 com a base de alimentos, pede confirmação e soma os macros do dia. Detalhe em
 [`docs/PRODUTO.md`](../PRODUTO.md); regras técnicas em [`CLAUDE.md`](../../CLAUDE.md).
 
-## Estado atual (2026-11-08 — fase 0)
+## Estado atual (2026-11-12 — primeira versão integrada)
 
 > Substitua esta seção a cada ciclo; não acumule. O que foi feito vive nas PRs e no git.
 
-- **Só documentação.** Sem código, sem CI, sem `package.json`.
-- **Bloqueio principal**: as decisões H-001 a H-006 do `TODO-HUMAN.md` (stack, transcrição,
-  extração, banco/hospedagem, fonte dos dados padrão, modo de merge). Todas têm uma recomendação
-  marcada; o humano pode responder só "ok".
-- **Próximo passo assim que H-001 for respondida**: promover T-001 (scaffold) do `BACKLOG` para o
-  `TODO-AI`, com o brief completo.
-- **Merge**: manual pelo humano até H-006.
+- **MVP implementado** (T-001 a T-014 + T-017) e integrado na branch de trabalho
+  `GiovaneGuimaraes/kcal-lorimeter`. 12 packages, 561 testes, lint/format/build verdes. Smoke da
+  API integrada feito pelo orquestrador (register → meta → lançamento → painel → voz sem chave → 503).
+- **Fila vazia.** O que falta é humano: H-010 (testar no aparelho), H-009 (conferir seed TACO),
+  H-008 (chaves), H-007 (contas de distribuição), e abrir a PR desta branch para a `main` (H-006).
+- **Próximo ciclo**: promover do `BACKLOG` o que o teste no aparelho revelar; depois T-016
+  (EAS) quando H-007 for respondida.
 
 ## Como operar
 
@@ -60,3 +60,7 @@ com a base de alimentos, pede confirmação e soma os macros do dia. Detalhe em
 - Corpo de PR sempre via `--body-file`.
 - Teste com data: ancore em data relativa ("hoje", "ontem"), nunca fixa — teste envelhece.
 - Com Haiku, confira o diff, não a prosa: ele já entregou código certo com relatório errado.
+- Worktree do executor pode nascer de uma base diferente da branch do orquestrador (T-001 nasceu da
+  `main`): diga no prompt qual branch é a base e confira `git merge-base` antes de integrar.
+- No Windows, `tsx watch` deixa node órfão na porta 3000 quando o pnpm é morto: matar pelo PID
+  (`Get-NetTCPConnection -LocalPort 3000`).

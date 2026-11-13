@@ -67,7 +67,7 @@ que falta. Uma pergunta pendente vira item no `TODO-HUMAN`, nunca uma frase solt
 - **Fora de escopo**: o que NÃO entra, mesmo parecendo vizinho.
 - **Arquivos-alvo**: caminhos prováveis.
 - **Critério de aceite**: verificável + comando de teste.
-- **Verificação**: 1 teste | 2 rodar o app | 3 não precisa (motivo) — ver abaixo.
+- **Verificação**: 1 teste | 2 rodar o app | 3 não precisa (motivo) | 4 humano no aparelho (passo + esperado) — ver abaixo.
 ```
 
 **Por que `Propósito` e `Fora de escopo`**: critério de aceite sozinho é um proxy que o agente
@@ -81,8 +81,9 @@ Decidido no brief, pelo orquestrador. A primeira linha que servir, de cima para 
 | Nível | A tarefa se prova por | Exemplo |
 |---|---|---|
 | **1 — Teste** | teste automatizado que afirma exatamente o critério de aceite | cálculo de macros, casamento de alimento, validação do JSON do LLM |
-| **2 — Rodar o app** | o executor sobe o app, exercita a mudança e cola no relatório o comando e a saída real; o revisor repete **uma** chamada | upload de áudio de ponta a ponta, gravação no navegador, migração do banco |
+| **2 — Rodar o app** | o executor sobe a API (ou o app Expo em simulador/web), exercita a mudança e cola no relatório o comando e a saída real; o revisor repete **uma** chamada | upload de áudio para a API de ponta a ponta, migração do banco |
 | **3 — Não precisa** | o merge prova (docs, config, refactor sem mudança de comportamento) — o motivo vai escrito, e nunca é "os testes passaram" | esta PR |
+| **4 — Humano testa no aparelho** | o que só um celular de verdade mostra: gravação com o microfone, permissões do sistema, layout em tela pequena. O brief diz **o passo** e **o esperado**; o orquestrador registra no `TODO-HUMAN` depois do merge, com o build (EAS) a instalar | gravar áudio no iPhone/Android, negar e conceder permissão de microfone |
 
 ## Estados de uma tarefa
 
@@ -137,8 +138,8 @@ orquestrador passa o id exato (`claude-opus-5-5`, `claude-sonnet-5-5`, `claude-h
 
 - O orquestrador **não aceita "testes passaram"** do relatório de ninguém. O gate é o **check do CI
   na PR**; antes de existir CI (fase 0), é a saída real do comando colada pelo revisor.
-- Risco que nenhum teste cobre (gravação de áudio no navegador, chamada real ao STT) é verificado
-  **rodando**, no nível 2, não lendo o diff.
+- Risco que nenhum teste cobre (chamada real ao STT, gravação no aparelho) é verificado
+  **rodando**, no nível 2 ou 4, não lendo o diff.
 
 ## Regras de comunicação
 

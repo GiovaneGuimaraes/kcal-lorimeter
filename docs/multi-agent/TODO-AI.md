@@ -11,6 +11,5 @@
 
 ## Fila
 
-> **Vazia (fase 0).** Toda tarefa de implementação depende da stack (H-001 a H-004 no
-> `TODO-HUMAN.md`). Assim que elas forem respondidas, o orquestrador promove T-001 (scaffold) e
-> T-002 (base de alimentos padrão) do `BACKLOG.md` para cá, com o brief completo.
+> **Vazia.** MVP (T-001 a T-014) e T-017 integrados na branch de trabalho. Próximos candidatos no
+> `BACKLOG.md`; a verificação no aparelho (nível 4) está no `TODO-HUMAN.md` (H-010).

@@ -10,32 +10,35 @@
 
 ## Roadmap do MVP (ordem sugerida)
 
-Funcionalidades F1–F8 de [`docs/PRODUTO.md`](../PRODUTO.md).
+Funcionalidades F1–F8 de [`docs/PRODUTO.md`](../PRODUTO.md). **MVP (T-001 a T-014) implementado e integrado.** T-017 (ciclo do voice_log) está no `TODO-AI.md`.
 
-| Id | Item | Complexidade estimada | Falta para ficar pronto |
+| Id | Item | Complexidade | Falta para ficar pronto |
 |---|---|---|---|
-| T-001 | **Scaffold do monorepo**: pnpm, TS strict, lint + Prettier, test runner, CI no GitHub Actions (`build`, `lint`, `format:check`, `test`), `.env.example` | média | H-001 (stack), H-004 (banco) |
-| T-002 | **Base de alimentos padrão** (F3): ~40 alimentos comuns com macros por 100 g, apelidos e a **fonte** de cada valor, como dado de seed versionado | média | H-005 (fonte); formato do seed depende de T-001 |
-| T-003 | **Schema + migrações** (`users`, `daily_goals`, `foods`, `voice_logs`, `meal_entries`) com isolamento por `user_id` | alta | T-001, H-004 |
-| T-004 | **`nutrition-core`**: cálculo de macros por gramas e por porção, soma do dia, arredondamento de exibição — funções puras, 100% testadas | alta | T-001 |
-| T-005 | **Auth** (F1): cadastro, login, sessão; toda rota de dado exige usuário | alta | T-003, H-004 (provedor de auth) |
-| T-006 | **`foods-core`** (F3/F4): listar padrões + da pessoa, criar/editar alimento próprio, **casar texto com alimento** (nome, apelidos, depois busca aproximada) | alta | T-003 |
-| T-007 | **Metas** (F2): CRUD da meta diária | média | T-003, T-005 |
-| T-008 | **`entries-core`** (F6/F7): criar/editar/apagar lançamento com snapshot dos macros; totais do dia × meta | alta | T-004, T-006 |
-| T-009 | **Integração STT**: interface `transcribe(audio) → texto` + 1 provedor, mockado nos testes | média | H-002 |
-| T-010 | **Integração LLM de extração**: `extract(texto) → [{alimento, quantidade, unidade, refeicao?}]` com saída estruturada validada por schema; recusa valor nutricional | alta | H-003 |
-| T-011 | **`voice-core`** (F5): orquestra STT → extração → casamento → `voice_log` pendente | alta | T-006, T-009, T-010 |
-| T-012 | **Web: gravar áudio** (PWA, `MediaRecorder`, permissões, limite de duração, upload) | alta | T-001, T-011 |
-| T-013 | **Web: tela de revisão** (corrigir item, escolher entre candidatos, cadastrar alimento desconhecido, confirmar) | alta | T-008, T-011 |
-| T-014 | **Web: painel do dia + histórico** (F7/F8) | média | T-008 |
-| T-015 | **Deploy** do MVP | alta | H-004 |
+| T-015 | **Deploy da API** | alta | decisão de hospedagem (fora do escopo agora) |
+| T-016 | **Distribuição do app**: `eas.json` com perfis, build interno | média | H-007 |
+
+## Decisões de produto pendentes de brief
+
+- **Quantidade não dita na fala** ("comi frango"): hoje o prompt da extração devolve `quantidade: 1, unidade: "unidade"` como sentinela, indistinguível de "1 ovo". Falta: decidir se o contrato ganha `quantidade` opcional para a tela de revisão pedir o peso (sugestão do revisor da T-010).
+
+- **Fuso horário de "hoje"**: a API usa a data UTC do servidor como default; no Brasil (UTC-3), entre 21h e 24h o servidor já está no dia seguinte. Falta: decidir se o app sempre manda `data` local (recomendado) ou se existe fuso por usuário. Afeta T-008 (entries) e T-014 (painel).
+
+- **Calibrar o casamento por similaridade** com frases reais: "macarrão" sugere "Maçã" (Dice 0,57 no apelido "maca"). O match carrega toda a base em memória; ok no MVP.
+
+- **Limpeza de `voice_logs` pendentes** que nunca foram confirmados nem descartados (acumulam).
+- **README da rest-api** não lista /foods, /goals, /entries, /days: atualizar quando a API estabilizar.
+
+- **Flake no jest do mobile**: `login.test.tsx` falhou 1× em 4 execuções da suíte completa do workspace (passa isolado e em 3 execuções seguidas). Se repetir, investigar timers/`act` em `home.test.tsx`.
+- **Unificar `src/api/review-entries.ts` com `src/api/entries.ts`** no mobile (criados em paralelo por T-013 e T-014).
+- **Meta retroativa**: definir meta olhando um dia passado não cobre aquele dia (`vigenteDesde` = hoje). Decisão de produto.
 
 ## Candidatas (fora do MVP — o orquestrador puxa daqui depois)
 
-- **`backlog:check` no CI**: falhar se `TODO-AI.md` + `BACKLOG.md` passarem de ~8 KB. Falta: T-001 existir. Só vale virar trava se a regra de higiene for violada (README § Higiene).
+- **`backlog:check` no CI**: falhar se `TODO-AI.md` + `BACKLOG.md` passarem de ~8 KB. Só vale virar trava se a regra de higiene for violada (README § Higiene).
 - **Porções caseiras** ("colher de sopa", "concha", "unidade média") por alimento. Falta: decisão de produto sobre quais porções e de onde vêm os pesos.
 - **Refeições favoritas** ("meu café de sempre" lança vários itens de uma vez).
 - **Sugestão de macros para alimento desconhecido** a partir da tabela oficial, com confirmação — nunca gerada por LLM.
 - **Gráficos semanais/mensais** de kcal e macros.
 - **Código de barras / foto do prato.** Falta: decisão de produto e de custo.
 - **Exportar dados** (CSV).
+- **Trocar SQLite por Postgres** quando houver mais de um usuário real (Drizzle facilita).
