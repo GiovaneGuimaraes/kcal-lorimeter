@@ -8,7 +8,7 @@ import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { errorMessage } from "../api/client";
 import { deleteEntry, updateEntry } from "../api/entries";
-import { ChoiceRow } from "../ui/choice";
+import { SegmentedRow } from "../ui/choice";
 import { Button, colors, ErrorMessage, Field } from "../ui/components";
 import { formatGrams, MEAL_OPTIONS, parseNumber } from "../ui/format";
 
@@ -69,7 +69,7 @@ export function EntryEditor({ entry, onChanged, onClose }: EntryEditorProps) {
         keyboardType="decimal-pad"
         editable={!ocupado}
       />
-      <ChoiceRow
+      <SegmentedRow
         label="Refeição"
         options={MEAL_OPTIONS}
         value={refeicao}
