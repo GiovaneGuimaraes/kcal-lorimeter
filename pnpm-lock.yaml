@@ -61,6 +61,19 @@ importers:
         specifier: ^4.23.15
         version: 4.23.15
 
+  packages/goals-core:
+    dependencies:
+      '@kcal/db':
+        specifier: workspace:*
+        version: link:../db
+      drizzle-orm:
+        specifier: ^0.45.4
+        version: 0.45.4(@opentelemetry/api@1.10.0)(@types/better-sqlite3@9.6.0)(better-sqlite3@13.1.1)
+    devDependencies:
+      '@kcal/auth-core':
+        specifier: workspace:*
+        version: link:../auth-core
+
   packages/llm:
     dependencies:
       '@anthropic-ai/sdk':
@@ -142,6 +155,9 @@ importers:
       '@kcal/db':
         specifier: workspace:*
         version: link:../db
+      '@kcal/goals-core':
+        specifier: workspace:*
+        version: link:../goals-core
       '@kcal/shared':
         specifier: workspace:*
         version: link:../shared
