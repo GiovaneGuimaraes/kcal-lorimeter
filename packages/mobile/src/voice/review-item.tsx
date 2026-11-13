@@ -1,30 +1,32 @@
+import { formatMacros } from "@kcal/nutrition-core";
 import { CreateFoodSchema, type FoodDto } from "@kcal/shared";
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import Svg, { Defs, Pattern, Rect } from "react-native-svg";
 import { errorMessage } from "../api/client";
 import { createFood, searchFoods } from "../api/review-entries";
-import { Button, colors, ErrorMessage, Field } from "../ui/components";
+import { SegmentedRow } from "../ui/choice";
+import { Button, ErrorMessage, Field } from "../ui/components";
+import { formatGrams } from "../ui/format";
+import { textStyles, theme } from "../ui/theme";
 import { fieldErrors } from "../ui/validation";
-import { allowedUnits, lineLabel, type ReviewLine, UNIT_LABELS, withFood } from "./review-lines";
+import {
+  formatKcalMilhar,
+  isLinePending,
+  itemNumber,
+  lineMacros,
+  parseQuantidade,
+  type ReviewLine,
+  UNIT_LABELS,
+  unitChoices,
+  withFood,
+  withQuantidade,
+  withUnidade,
+} from "./review-lines";
 
-type ChipProps = { label: string; selected: boolean; onPress(): void; disabled?: boolean };
+const c = theme.color;
 
-/** Opção selecionável (unidade, refeição). */
-export function Chip({ label, selected, onPress, disabled }: ChipProps) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityState={{ selected, disabled: !!disabled }}
-      disabled={disabled}
-      onPress={onPress}
-      style={[styles.chip, selected && styles.chipSelected, disabled && styles.off]}
-    >
-      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{label}</Text>
-    </Pressable>
-  );
-}
-
-type Painel = "buscar" | "cadastrar" | null;
+type Painel = "trocar" | "buscar" | "cadastrar" | null;
 
 type Props = {
   line: ReviewLine;
@@ -34,34 +36,59 @@ type Props = {
   onChange(line: ReviewLine): void;
 };
 
-/** Um item da revisão: alimento (casado, candidato, busca ou cadastro), quantidade e unidade. */
+/** "256 kcal" (inteiro, com milhar) ou `null` se o item ainda não tem macros. */
+function kcalText(line: ReviewLine): string | null {
+  const m = lineMacros(line);
+  return m ? `${formatKcalMilhar(formatMacros(m).kcal)} kcal` : null;
+}
+
+/** "1 un = 50 g" quando o alimento tem porção padrão. */
+function porcaoText(food: FoodDto | null): string | null {
+  if (!food?.porcaoPadraoG) return null;
+  return `1 ${food.nomePorcao ?? "un"} = ${formatGrams(food.porcaoPadraoG)} g`;
+}
+
+/**
+ * Um item da revisão (§ 2.4.7): número, alimento, kcal e quantidade. Sem alimento ou precisando do
+ * peso, o item fica listrado com "BUSCAR | CADASTRAR | TIRAR". O alimento pode vir do casamento,
+ * de um candidato, da busca ou de um cadastro.
+ */
 export function ReviewItemCard({ line, index, locked, onChange }: Props) {
   const [painel, setPainel] = useState<Painel>(null);
-  const rotulo = lineLabel(line, index);
-  const entendido = `"${line.extraido.alimento}" — ${line.extraido.quantidade} ${UNIT_LABELS[line.extraido.unidade]}`;
+  const numero = itemNumber(index);
 
   if (line.removido) {
     return (
-      <View style={[styles.card, styles.cardOff]}>
-        <Text style={styles.muted}>{`${rotulo}: removido`}</Text>
-        <Button
-          title="Desfazer"
-          variant="secondary"
-          disabled={locked}
-          onPress={() => onChange({ ...line, removido: false })}
-        />
+      <View style={styles.item}>
+        <View style={styles.row}>
+          <Text style={styles.num}>{numero}</Text>
+          <Text style={[styles.mono, styles.faint, styles.flex]}>
+            {`${line.food?.nome ?? line.extraido.alimento} — tirado`}
+          </Text>
+          <LinkButton
+            label="desfazer"
+            disabled={locked}
+            onPress={() => onChange({ ...line, removido: false })}
+          />
+        </View>
       </View>
     );
   }
 
   if (line.salvo) {
+    const kcal = kcalText(line);
     return (
-      <View style={styles.card}>
-        <Text style={styles.title}>{rotulo}</Text>
-        <Text
-          style={styles.text}
-        >{`${line.food?.nome ?? ""} — ${line.quantidade} ${UNIT_LABELS[line.unidade]}`}</Text>
-        <Text style={styles.saved}>Salvo</Text>
+      <View style={styles.item}>
+        <View style={styles.row}>
+          <Text style={styles.num}>{numero}</Text>
+          <View style={styles.flex}>
+            <Text style={styles.name}>{line.food?.nome ?? ""}</Text>
+            <Text style={styles.mono}>
+              {`${line.quantidade} ${UNIT_LABELS[line.unidade]}${kcal ? ` · ${kcal}` : ""}`}
+            </Text>
+          </View>
+          <Text style={styles.saved}>Salvo</Text>
+        </View>
       </View>
     );
   }
@@ -71,55 +98,133 @@ export function ReviewItemCard({ line, index, locked, onChange }: Props) {
     setPainel(null);
   }
 
-  const unidades = allowedUnits(line.food);
+  function alternar(p: Exclude<Painel, null>) {
+    setPainel(painel === p ? null : p);
+  }
+
+  const food = line.food;
+  const quantidadeValida = parseQuantidade(line.quantidade) !== null;
+  // Listrado: sem alimento, ou precisando do peso e ainda sem um peso válido. A árvore abaixo é a
+  // mesma nos dois estados (o campo de quantidade não é remontado enquanto a pessoa digita).
+  const listrado = !food || (line.precisaPeso && !quantidadeValida);
+  const kcal = kcalText(line);
+  const porcao = porcaoText(food);
+  const unidades = unitChoices(line);
+  const mostrarCandidatos = line.candidatos.length > 0 && (!food || painel === "trocar");
+  const mostrarFaixa =
+    listrado || painel === "trocar" || painel === "buscar" || painel === "cadastrar";
+
+  let motivo: string | null = null;
+  if (!food) {
+    motivo = line.candidatos.length > 0 ? "qual destes?" : "não achei na base";
+  } else if (listrado) {
+    motivo = "diga o peso em gramas";
+  } else if (isLinePending(line)) {
+    motivo = "informe uma quantidade válida";
+  }
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.title}>{rotulo}</Text>
-      <Text style={styles.muted}>{`Entendi: ${entendido}`}</Text>
-
-      {line.food ? (
-        <Text style={styles.text}>{`Alimento: ${line.food.nome}`}</Text>
-      ) : line.candidatos.length > 0 ? (
-        <Text style={styles.text}>Qual destes?</Text>
-      ) : (
-        <Text style={styles.text}>Não achei este alimento. Busque ou cadastre.</Text>
-      )}
-
-      {line.candidatos.length > 0 ? (
-        <View style={styles.row}>
-          {line.candidatos.map((c) => (
-            <Chip
-              key={c.id}
-              label={c.nome}
-              selected={line.food?.id === c.id}
-              disabled={locked}
-              onPress={() => escolher(c)}
+    <View style={styles.item}>
+      {listrado ? <Listras id={`listras-${index}`} /> : null}
+      <View style={styles.row}>
+        <Text style={styles.num}>{numero}</Text>
+        <View style={styles.flex}>
+          <Text style={listrado ? styles.pendenteTitle : styles.name}>
+            {listrado ? `“${line.extraido.alimento}”?` : (food?.nome ?? "")}
+          </Text>
+          {motivo ? <Text style={[styles.mono, !listrado && styles.danger]}>{motivo}</Text> : null}
+          {line.precisaPeso && listrado && food ? (
+            <Text style={styles.mono}>
+              {`${food.nome}: sem porção para "${UNIT_LABELS[line.extraido.unidade]}"`}
+            </Text>
+          ) : null}
+          {kcal || porcao ? (
+            <View style={styles.inline}>
+              {kcal ? <Text style={[styles.mono, styles.monoBold]}>{kcal}</Text> : null}
+              {porcao ? <Text style={[styles.mono, styles.muted]}>{porcao}</Text> : null}
+            </View>
+          ) : null}
+          {listrado ? null : (
+            <View style={styles.inline}>
+              <LinkButton label="trocar" disabled={locked} onPress={() => alternar("trocar")} />
+              <Text style={[styles.mono, styles.muted]}>·</Text>
+              <LinkButton
+                label="tirar"
+                disabled={locked}
+                onPress={() => onChange({ ...line, removido: true })}
+              />
+            </View>
+          )}
+        </View>
+        {food ? (
+          <View style={styles.qty}>
+            <TextInput
+              accessibilityLabel={
+                line.precisaPeso
+                  ? `Peso em gramas — item ${index + 1}`
+                  : `Quantidade — item ${index + 1}`
+              }
+              value={line.quantidade}
+              onChangeText={(q) => onChange(withQuantidade(line, q))}
+              keyboardType="decimal-pad"
+              editable={!locked}
+              style={styles.qtyInput}
             />
+            <Text style={styles.qtyUnit}>{UNIT_LABELS[line.unidade]}</Text>
+          </View>
+        ) : null}
+      </View>
+
+      {food && unidades.length > 1 ? (
+        <SegmentedRow
+          label={`Unidade — item ${index + 1}`}
+          options={unidades.map((u) => ({ value: u, label: UNIT_LABELS[u] }))}
+          value={line.unidade}
+          disabled={locked}
+          onChange={(u) => onChange(withUnidade(line, u))}
+        />
+      ) : null}
+
+      {mostrarCandidatos ? (
+        <View style={styles.wrap}>
+          {line.candidatos.map((cand) => (
+            <View key={cand.id} style={styles.candidato}>
+              <Button
+                title={cand.nome}
+                variant="secondary"
+                disabled={locked}
+                onPress={() => escolher(cand)}
+              />
+            </View>
           ))}
         </View>
       ) : null}
 
-      <View style={styles.row}>
-        <Chip
-          label="Buscar"
-          selected={painel === "buscar"}
-          disabled={locked}
-          onPress={() => setPainel(painel === "buscar" ? null : "buscar")}
-        />
-        <Chip
-          label="Cadastrar"
-          selected={painel === "cadastrar"}
-          disabled={locked}
-          onPress={() => setPainel(painel === "cadastrar" ? null : "cadastrar")}
-        />
-        <Chip
-          label="Remover"
-          selected={false}
-          disabled={locked}
-          onPress={() => onChange({ ...line, removido: true })}
-        />
-      </View>
+      {mostrarFaixa ? (
+        <View style={styles.faixa}>
+          <View style={styles.faixaItem}>
+            <Button title="BUSCAR" disabled={locked} onPress={() => alternar("buscar")} />
+          </View>
+          <View style={styles.faixaItem}>
+            <Button
+              title="CADASTRAR"
+              variant="secondary"
+              disabled={locked}
+              onPress={() => alternar("cadastrar")}
+            />
+          </View>
+          {listrado ? (
+            <View style={styles.faixaItem}>
+              <Button
+                title="TIRAR"
+                variant="secondary"
+                disabled={locked}
+                onPress={() => onChange({ ...line, removido: true })}
+              />
+            </View>
+          ) : null}
+        </View>
+      ) : null}
 
       {painel === "buscar" ? (
         <BuscaAlimento inicial={line.extraido.alimento} onEscolher={escolher} />
@@ -127,33 +232,53 @@ export function ReviewItemCard({ line, index, locked, onChange }: Props) {
       {painel === "cadastrar" ? (
         <CadastroAlimento inicial={line.extraido.alimento} onCriado={escolher} />
       ) : null}
-
-      {line.precisaPeso ? (
-        <Text style={styles.text}>
-          {`${line.food?.nome ?? "Este alimento"} não tem porção padrão para "${UNIT_LABELS[line.extraido.unidade]}": informe o peso em gramas.`}
-        </Text>
-      ) : null}
-      <Field
-        label={
-          line.precisaPeso ? `Peso em gramas — item ${index + 1}` : `Quantidade — item ${index + 1}`
-        }
-        value={line.quantidade}
-        onChangeText={(quantidade) => onChange({ ...line, quantidade, erro: null })}
-        keyboardType="decimal-pad"
-        editable={!locked}
-      />
-      <View style={styles.row}>
-        {unidades.map((u) => (
-          <Chip
-            key={u}
-            label={UNIT_LABELS[u]}
-            selected={line.unidade === u}
-            disabled={locked}
-            onPress={() => onChange({ ...line, unidade: u, erro: null })}
-          />
-        ))}
-      </View>
       <ErrorMessage>{line.erro}</ErrorMessage>
+    </View>
+  );
+}
+
+/** Link mono ("trocar", "tirar", "desfazer"): área de toque mínima, sem cor solta. */
+function LinkButton({
+  label,
+  onPress,
+  disabled,
+}: {
+  label: string;
+  onPress(): void;
+  disabled?: boolean;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ disabled: !!disabled }}
+      disabled={disabled}
+      onPress={onPress}
+      hitSlop={8}
+      style={styles.link}
+    >
+      <Text style={[styles.mono, styles.linkText, disabled && styles.faint]}>{label}</Text>
+    </Pressable>
+  );
+}
+
+/** Fundo listrado a 45° (`warnStripe` sobre branco) do item pendente, com `react-native-svg`. */
+function Listras({ id }: { id: string }) {
+  return (
+    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+      <Svg width="100%" height="100%">
+        <Defs>
+          <Pattern
+            id={id}
+            patternUnits="userSpaceOnUse"
+            width={16}
+            height={16}
+            patternTransform="rotate(45)"
+          >
+            <Rect x={0} y={0} width={8} height={16} fill={c.warnStripe} />
+          </Pattern>
+        </Defs>
+        <Rect x={0} y={0} width="100%" height="100%" fill={`url(#${id})`} />
+      </Svg>
     </View>
   );
 }
@@ -193,12 +318,16 @@ function BuscaAlimento({
       <Button title="Procurar" variant="secondary" onPress={buscar} busy={buscando} />
       <ErrorMessage>{erro}</ErrorMessage>
       {resultado && resultado.length === 0 ? (
-        <Text style={styles.muted}>Nenhum alimento encontrado. Tente outro nome ou cadastre.</Text>
+        <Text style={[styles.mono, styles.muted]}>
+          Nenhum alimento encontrado. Tente outro nome ou cadastre.
+        </Text>
       ) : null}
       {resultado && resultado.length > 0 ? (
-        <View style={styles.row}>
+        <View style={styles.wrap}>
           {resultado.map((f) => (
-            <Chip key={f.id} label={f.nome} selected={false} onPress={() => onEscolher(f)} />
+            <View key={f.id} style={styles.candidato}>
+              <Button title={f.nome} variant="secondary" onPress={() => onEscolher(f)} />
+            </View>
           ))}
         </View>
       ) : null}
@@ -256,7 +385,7 @@ function CadastroAlimento({
 
   return (
     <View style={styles.panel}>
-      <Text style={styles.muted}>Valores por 100 g (veja o rótulo ou a tabela nutricional).</Text>
+      <Text style={styles.hint}>Valores por 100 g (veja o rótulo ou a tabela nutricional).</Text>
       <Field label="Nome do alimento" value={nome} onChangeText={setNome} error={erros.nome} />
       <Field
         label="Kcal por 100 g"
@@ -301,25 +430,66 @@ function CadastroAlimento({
 }
 
 const styles = StyleSheet.create({
-  card: { gap: 10, padding: 16, borderWidth: 1, borderColor: colors.border, borderRadius: 12 },
-  cardOff: { opacity: 0.7 },
-  panel: { gap: 10, padding: 12, borderRadius: 8, backgroundColor: "#F4F6F5" },
-  title: { fontSize: 17, fontWeight: "600", color: colors.text },
-  text: { fontSize: 16, color: colors.text },
-  muted: { fontSize: 14, color: colors.muted },
-  saved: { fontSize: 15, fontWeight: "600", color: colors.primary },
-  row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  chip: {
-    minHeight: 40,
-    paddingHorizontal: 14,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: colors.primary,
-    justifyContent: "center",
-    backgroundColor: colors.background,
+  item: {
+    gap: 12,
+    paddingHorizontal: theme.space.page,
+    paddingVertical: theme.space.row,
+    borderBottomWidth: theme.border.medium,
+    borderColor: c.ink,
+    backgroundColor: c.paper,
+    overflow: "hidden",
   },
-  chipSelected: { backgroundColor: colors.primary },
-  chipText: { fontSize: 15, color: colors.primary },
-  chipTextSelected: { color: colors.primaryText },
-  off: { opacity: 0.5 },
+  row: { flexDirection: "row", alignItems: "flex-start", gap: 12 },
+  flex: { flex: 1, gap: 4 },
+  inline: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8 },
+  wrap: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  num: { ...textStyles.label, fontSize: 13, color: c.ink, paddingTop: 3 },
+  name: {
+    fontFamily: theme.font.display,
+    fontSize: 17,
+    lineHeight: 21,
+    textTransform: "uppercase",
+    color: c.ink,
+  },
+  pendenteTitle: { ...textStyles.mealTitle, color: c.ink },
+  mono: { ...textStyles.line, color: c.ink },
+  monoBold: { fontFamily: theme.font.monoBold },
+  muted: { color: c.textMuted },
+  faint: { color: c.textFaint },
+  danger: { color: c.danger },
+  saved: { ...textStyles.label, fontFamily: theme.font.monoBold, color: c.ink, paddingTop: 3 },
+  link: { minHeight: 28, justifyContent: "center" },
+  linkText: { textDecorationLine: "underline" },
+  qty: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    height: 52,
+    paddingHorizontal: 10,
+    borderWidth: theme.border.heavy,
+    borderColor: c.ink,
+    borderRadius: theme.radius,
+    backgroundColor: c.paper,
+  },
+  qtyInput: {
+    minWidth: 52,
+    padding: 0,
+    textAlign: "right",
+    fontFamily: theme.font.monoBold,
+    fontSize: 15,
+    color: c.ink,
+  },
+  qtyUnit: { fontFamily: theme.font.mono, fontSize: 15, color: c.ink },
+  candidato: { flexGrow: 1 },
+  faixa: { flexDirection: "row", gap: 0 },
+  faixaItem: { flex: 1, justifyContent: "center" },
+  panel: {
+    gap: 10,
+    padding: 12,
+    borderWidth: theme.border.heavy,
+    borderColor: c.ink,
+    borderRadius: theme.radius,
+    backgroundColor: c.paper,
+  },
+  hint: { ...textStyles.body, color: c.textMuted },
 });

@@ -52,7 +52,7 @@ function RootNavigator() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Protected guard={signedIn}>
         <Stack.Screen name="index" />
-        <Stack.Screen name="revisao" options={{ headerShown: true, title: "Revisão" }} />
+        <Stack.Screen name="revisao" />
         <Stack.Screen name="meta" options={{ headerShown: true, title: "Meta diária" }} />
         <Stack.Screen
           name="lancamento"
