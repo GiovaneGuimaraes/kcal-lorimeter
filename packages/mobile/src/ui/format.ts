@@ -33,5 +33,5 @@ export const MEAL_LABELS = {
   jantar: "Jantar",
 } as const satisfies Record<MealKind, string>;
 
-/** Opções de refeição na ordem do dia (para `ChoiceRow`). */
+/** Opções de refeição na ordem do dia (para `SegmentedRow`). */
 export const MEAL_OPTIONS = MEAL_ORDER.map((value) => ({ value, label: MEAL_LABELS[value] }));

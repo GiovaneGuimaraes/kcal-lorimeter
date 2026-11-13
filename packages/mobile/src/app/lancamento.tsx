@@ -20,7 +20,7 @@ import { errorMessage } from "../api/client";
 import { createEntry } from "../api/entries";
 import { searchFoods } from "../api/foods";
 import { formatDayLabel, mealForHour, todayLocal } from "../day/dates";
-import { ChoiceRow } from "../ui/choice";
+import { SegmentedRow } from "../ui/choice";
 import { Button, colors, ErrorMessage, Field } from "../ui/components";
 import { formatKcal, MEAL_OPTIONS, parseNumber } from "../ui/format";
 import { unitOptions } from "../ui/unit-options";
@@ -121,14 +121,14 @@ export default function LancamentoScreen() {
               placeholder="200"
               editable={!salvando}
             />
-            <ChoiceRow
+            <SegmentedRow
               label="Unidade"
               options={unitOptions(food)}
               value={unidade}
               onChange={setUnidade}
               disabled={salvando}
             />
-            <ChoiceRow
+            <SegmentedRow
               label="Refeição"
               options={MEAL_OPTIONS}
               value={refeicao}
