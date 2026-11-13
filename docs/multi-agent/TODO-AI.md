@@ -14,21 +14,6 @@
 Origem desta onda: [`docs/HANDOFF-DESIGN-D.md`](../HANDOFF-DESIGN-D.md) (correções da review +
 visual D "Cartaz"). Os briefs abaixo referenciam as seções do handoff em vez de repeti-las.
 
-### T-018 — Correções F-1, F-2, F-5, F-6 no app
-- **Status**: EM_ANDAMENTO · **Complexidade**: média · **Depende de**: —
-- **Objetivo**: aplicar as correções da Parte 1 do handoff no `packages/mobile`: F-1 (sessão
-  aplicada antes de persistir; falha do SecureStore não derruba o login), F-2 (`ReviewProvider`
-  zera a revisão quando a sessão vira `signedOut`, cobrindo "Sair" e o 401 automático), F-5
-  (remover "ml" das unidades do lançamento manual), F-6 (`accessibilityState={{ checked }}` no
-  `ChoiceRow`).
-- **Propósito**: o app não mostra erro em cadastro que deu certo, não vaza transcrição entre
-  contas, não oferece unidade errada.
-- **Fora de escopo**: visual D, F-3, F-4, F-7, F-8.
-- **Critério de aceite**: `pnpm --filter @kcal/mobile test` verde com os testes descritos em cada
-  F do handoff (SecureStore rejeitando → `signedIn`; sair → `review` null; `unitOptions(arroz)`
-  sem `ml`; `getByRole("radio", { name: "Almoço", checked: true })`).
-- **Verificação**: 1.
-
 ### T-020 — Macros por item na revisão de voz (calculados no servidor)
 - **Status**: EM_ANDAMENTO · **Complexidade**: alta · **Depende de**: —
 - **Objetivo**: handoff § 2.6 linha 1. `VoiceReviewItemSchema` ganha `macros?: Macros`;
@@ -45,7 +30,7 @@ visual D "Cartaz"). Os briefs abaixo referenciam as seções do handoff em vez d
 - **Verificação**: 1.
 
 ### T-021 — Visual D: tokens, fontes, logo e componentes base
-- **Status**: PENDENTE · **Complexidade**: alta · **Depende de**: T-018
+- **Status**: EM_ANDAMENTO · **Complexidade**: alta · **Depende de**: T-018
 - **Objetivo**: handoff § 2.1, 2.2, 2.3, 2.5. `ui/theme.ts`; fontes Archivo + IBM Plex Mono via
   `expo-font`/`useFonts` no `_layout` (splash até carregar); `react-native-svg` + `ui/logo.tsx`;
   reescrever `ui/components.tsx` (`Button` primário/secundário/perigo/desabilitado com motivo,

@@ -23,6 +23,7 @@ aqui o que **muda uma decisão futura** de roteamento; o resto vai no corpo da P
 | T-014 app painel | média | Opus 5.5 | 1 | 0 — 3 sugestões |
 | T-017 voice_log confirmado | média | Sonnet 5.5 | 1 | 0 |
 | T-019 log 500 | média | Sonnet 5.5 | 1 | 0 |
+| T-018 correções app | média | Sonnet 5.5 | 1 | 0 |
 
 ## Onde as reprovações caem
 

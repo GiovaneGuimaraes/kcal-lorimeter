@@ -35,7 +35,7 @@ Funcionalidades F1–F8 de [`docs/PRODUTO.md`](../PRODUTO.md). **MVP (T-001 a T-
 - **T-025 — F-3**: apagar transcrição/extração ao descartar (e ao confirmar?). Falta: H-011.
 - **F-7 web + F-8**: CORS em dev, `react-native-web`, `react-dom` alinhado; `GET /goals` 200 null. Falta: H-014.
 - **Guardar quantidade e unidade originais do lançamento** (hoje só gramas): a linha do painel mostraria "1 scoop". Falta: migração em `meal_entries`.
-- **Alimento líquido** (`ml` só quando fizer sentido): campo `liquido` em `foods` + seed. Falta: decisão de produto.
+- **Alimento líquido** (`ml` só quando fizer sentido): campo `liquido` em `foods` + seed; hoje `ml` saiu dos seletores (T-018) e um item extraído em `ml` fica sem chip marcado na revisão. Falta: decisão de produto.
 
 ## Candidatas (fora do MVP — o orquestrador puxa daqui depois)
 
