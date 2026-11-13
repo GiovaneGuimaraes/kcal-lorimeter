@@ -29,18 +29,6 @@ visual D "Cartaz"). Os briefs abaixo referenciam as seções do handoff em vez d
   sem `ml`; `getByRole("radio", { name: "Almoço", checked: true })`).
 - **Verificação**: 1.
 
-### T-019 — Correção F-4: log do 500 sem dado sensível
-- **Status**: EM_ANDAMENTO · **Complexidade**: média · **Depende de**: —
-- **Objetivo**: em `packages/rest-api/src/app.ts`, o `onError` loga `err.name` + id de correlação
-  (devolvido no corpo `{erro, id}` e no header `X-Request-Id`), e a stack só quando
-  `NODE_ENV !== "production"`. Mesmo padrão na rota de voz (já loga só o tipo).
-- **Propósito**: nenhum log do servidor carrega transcrição, hash ou parâmetro de query.
-- **Fora de escopo**: logger estruturado, níveis de log.
-- **Critério de aceite**: `pnpm --filter @kcal/rest-api test` verde: rota de teste que lança
-  `Error("frase sensível")` → corpo `{erro: "Erro interno do servidor", id}` e o texto "frase
-  sensível" **não** aparece no `console.error` capturado; com `NODE_ENV=production` não há stack.
-- **Verificação**: 1.
-
 ### T-020 — Macros por item na revisão de voz (calculados no servidor)
 - **Status**: EM_ANDAMENTO · **Complexidade**: alta · **Depende de**: —
 - **Objetivo**: handoff § 2.6 linha 1. `VoiceReviewItemSchema` ganha `macros?: Macros`;
