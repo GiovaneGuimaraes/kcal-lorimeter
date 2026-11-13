@@ -128,6 +128,9 @@ importers:
 
   packages/mobile:
     dependencies:
+      '@kcal/nutrition-core':
+        specifier: workspace:*
+        version: link:../nutrition-core
       '@kcal/shared':
         specifier: workspace:*
         version: link:../shared
