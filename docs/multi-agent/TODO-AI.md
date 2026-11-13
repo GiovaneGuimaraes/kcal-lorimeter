@@ -29,17 +29,3 @@ visual D "Cartaz"). Os briefs abaixo referenciam as seções do handoff em vez d
   "APAGAR MESMO?" → DELETE); prints 390×844: painel sem meta, com meta, com item, editor, apagar,
   ontem.
 - **Verificação**: 1 + prints.
-
-### T-024 — Visual D: revisão da voz
-- **Status**: EM_ANDAMENTO · **Complexidade**: alta · **Depende de**: T-020, T-021
-- **Objetivo**: handoff § 2.4.7. `TopBar` "CONFERE?", bloco preto "VOCÊ DISSE", `SegmentedRow` de
-  refeição, itens numerados com kcal (da API; ao editar a quantidade, recalcular com
-  `macrosForGrams` do `@kcal/nutrition-core` a partir do `match.food`, § 2.6 linha 2), item
-  pendente listrado com "BUSCAR | CADASTRAR | TIRAR", rodapé "TOTAL · N DE M ITENS" + "SALVAR" /
-  "RESOLVA O ITEM 04" / "DESCARTAR".
-- **Propósito**: a tela de confirmação no visual D, com os kcal visíveis antes de salvar.
-- **Fora de escopo**: mudar o contrato de confirmação (T-008/T-017 valem).
-- **Critério de aceite**: RNTL verde (os casos atuais de `revisao.test` continuam; novos: kcal por
-  item e total; editar quantidade atualiza o kcal com a mesma função do servidor; botão com
-  "RESOLVA O ITEM 02" quando há pendência); prints 390×844: revisão com pendência e pronta.
-- **Verificação**: 1 + prints.
