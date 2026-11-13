@@ -11,21 +11,6 @@
 
 ## Fila
 
-### T-004 — `nutrition-core`: cálculo de macros (funções puras)
-- **Status**: PENDENTE · **Complexidade**: alta · **Depende de**: T-001
-- **Objetivo**: `packages/nutrition-core` (`@kcal/nutrition-core`), uma função por arquivo:
-  `gramsFromQuantity(food, quantidade, unidade)` (`g` e `ml` = gramas; `unidade`/`scoop`/`fatia`
-  só se `porcaoPadraoG` existir, senão erro tipado `PortionRequiredError`);
-  `macrosForGrams(food, gramas)` → `{kcal, proteinaG, carboG, gorduraG}` sem arredondar;
-  `sumMacros(list)`; `formatMacros(m)` (1 casa para g, inteiro para kcal, só na exibição).
-  Tipos `FoodMacrosPer100g` e `Macros` em `@kcal/shared`.
-- **Propósito**: único lugar que transforma gramas em macros; todo o resto chama aqui.
-- **Fora de escopo**: banco, API, casamento de alimentos, porções caseiras.
-- **Critério de aceite**: `pnpm --filter @kcal/nutrition-core test` verde com casos: 0 g, quantidade
-  negativa (erro), 100 g = valor do alimento, porção padrão (whey 30 g × 1 scoop), unidade sem
-  porção (erro), soma de lista vazia, arredondamento 0.05 → exibição.
-- **Verificação**: 1.
-
 ### T-003 — `db`: schema SQLite + migrações (Drizzle)
 - **Status**: PENDENTE · **Complexidade**: alta · **Depende de**: T-001
 - **Objetivo**: `packages/db` (`@kcal/db`) com `better-sqlite3` + Drizzle: tabelas `users`,
