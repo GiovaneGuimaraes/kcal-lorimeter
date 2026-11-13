@@ -26,6 +26,9 @@ biome.json · tsconfig.base.json (strict) · pnpm-workspace.yaml · .env.example
 packages/
   shared/    @kcal/shared    — schemas Zod/tipos; src/, test/, jest (ts-jest)
   rest-api/  @kcal/rest-api  — Hono; src/app.ts (app), src/server.ts (porta), test/ via app.request
+  db/        @kcal/db        — Drizzle + better-sqlite3; createDb({path}); migrations/ versionado (pnpm --filter @kcal/db db:generate)
+  nutrition-core/ @kcal/nutrition-core — funções puras de macros (gramsFromQuantity, macrosForGrams, sumMacros, formatMacros)
+  stt/       @kcal/stt       — transcribe() Whisper (fetch injetado) + createFakeTranscriber
   mobile/    @kcal/mobile    — Expo SDK 58 + Expo Router (src/app/), expo-audio; jest-expo + RNTL
 ```
 

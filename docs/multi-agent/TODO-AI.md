@@ -11,21 +11,6 @@
 
 ## Fila
 
-### T-003 — `db`: schema SQLite + migrações (Drizzle)
-- **Status**: PENDENTE · **Complexidade**: alta · **Depende de**: T-001
-- **Objetivo**: `packages/db` (`@kcal/db`) com `better-sqlite3` + Drizzle: tabelas `users`,
-  `daily_goals`, `foods` (`user_id` nulo = padrão; macros por 100 g; `porcao_padrao_g`,
-  `nome_porcao`, `apelidos` JSON, `fonte`), `voice_logs`, `meal_entries` (snapshot
-  kcal/proteina/carbo/gordura, `origem`, `voice_log_id`) como em `docs/PRODUTO.md` § Modelo de
-  dados; FKs e índices por `user_id` + data; `createDb({ path })` que abre o arquivo (ou
-  `:memory:`) e aplica as migrações de `packages/db/migrations` (geradas pelo `drizzle-kit`).
-- **Propósito**: cada core recebe `db` pronto, tipado, com schema único.
-- **Fora de escopo**: seed de alimentos, funções de domínio, rotas.
-- **Critério de aceite**: `pnpm --filter @kcal/db test` verde: cria em memória, insere user +
-  food padrão + food da pessoa + entry com snapshot, lê de volta; FK inválida falha; migrações
-  versionadas no git.
-- **Verificação**: 1.
-
 ### T-010 — `llm`: extração de itens com Claude Haiku 5.5
 - **Status**: PENDENTE · **Complexidade**: alta · **Depende de**: T-001
 - **Objetivo**: `packages/llm` (`@kcal/llm`): schema Zod `ExtractedItem` em `@kcal/shared`

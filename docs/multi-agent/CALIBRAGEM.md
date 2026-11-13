@@ -10,6 +10,7 @@ aqui o que **muda uma decisão futura** de roteamento; o resto vai no corpo da P
 | T-001 scaffold | alta | Opus 5.5 | 1 | 0 — 4 sugestões (AGENTS.md do template, conflito de CLAUDE.md por base antiga do worktree) |
 | T-009 stt | média | Sonnet 5.5 | 1 | 0 — 3 sugestões (redact no corpo do 401, casos de teste extras) |
 | T-004 nutrition-core | alta | Opus 5.5 | 1 | 0 — 2 sugestões (ordem da multiplicação, alias de tipo) |
+| T-003 db | alta | Opus 5.5 | 1 | 0 — 3 sugestões (CHECK refeicao, testes cascade, índice food_id) |
 
 ## Onde as reprovações caem
 
