@@ -14,17 +14,6 @@
 Origem desta onda: [`docs/HANDOFF-DESIGN-D.md`](../HANDOFF-DESIGN-D.md) (correções da review +
 visual D "Cartaz"). Os briefs abaixo referenciam as seções do handoff em vez de repeti-las.
 
-### T-022 — Visual D: telas de entrar, criar conta, meta e lançar
-- **Status**: EM_ANDAMENTO · **Complexidade**: alta · **Depende de**: T-021
-- **Objetivo**: handoff § 2.4.1, 2.4.2, 2.4.5, 2.4.6. Login amarelo com "FALA / QUE A / GENTE /
-  CONTA.", cadastro derivado, meta com `TopBar`, lançamento com busca e `SegmentedRow` (sem "ml")
-  e aceitando `refeicao` por parâmetro (§ 2.6 linha 3).
-- **Propósito**: as quatro telas simples no visual D, comportamento inalterado.
-- **Fora de escopo**: painel, editor, revisão.
-- **Critério de aceite**: RNTL verde com `getByRole(..., { name: /entrar/i })` etc.; prints
-  390×844 das 4 telas comparáveis ao canvas.
-- **Verificação**: 1 + prints.
-
 ### T-023 — Visual D: painel do dia e editor do lançamento
 - **Status**: EM_ANDAMENTO · **Complexidade**: alta · **Depende de**: T-021
 - **Objetivo**: handoff § 2.4.3 e 2.4.4 + `formatKcal` com separador de milhar (§ 2.6 linha 4).

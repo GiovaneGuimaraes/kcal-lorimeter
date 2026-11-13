@@ -26,6 +26,7 @@ aqui o que **muda uma decisão futura** de roteamento; o resto vai no corpo da P
 | T-018 correções app | média | Sonnet 5.5 | 1 | 0 |
 | T-020 macros na revisão | alta | Opus 5.5 | 1 | 0 |
 | T-021 tema D | alta | Opus 5.5 | 1 | 0 — sem prints (sem web) |
+| T-022 telas simples D | alta | Opus 5.5 | 1 | 0 |
 
 ## Onde as reprovações caem
 
