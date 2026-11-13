@@ -1,8 +1,10 @@
 import { render, screen, userEvent, waitFor } from "@testing-library/react-native";
 import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
+import { StyleSheet } from "react-native";
 import LoginScreen from "../src/app/login";
 import { SESSION_STORAGE_KEY } from "../src/auth/session";
+import { theme } from "../src/ui/theme";
 import { AppProviders, AUTH, jsonResponse, mockFetch } from "./helpers";
 
 jest.mock("expo-secure-store", () => ({
@@ -18,7 +20,7 @@ async function preencher(email: string, senha: string) {
   const user = userEvent.setup();
   if (email) await user.type(screen.getByLabelText("E-mail"), email);
   if (senha) await user.type(screen.getByLabelText("Senha"), senha);
-  await user.press(screen.getByRole("button", { name: "Entrar" }));
+  await user.press(screen.getByRole("button", { name: /entrar/i }));
 }
 
 describe("LoginScreen", () => {
@@ -78,5 +80,38 @@ describe("LoginScreen", () => {
       email: "teste@exemplo.com",
       senha: "senha-teste-123",
     });
+  });
+
+  it("visual D: título-cartaz, faixa ENTRAR (ink/accent) | CRIAR CONTA (paper)", async () => {
+    mockFetch();
+    await render(<LoginScreen />, { wrapper: AppProviders });
+
+    const titulo = screen.getByRole("header", { name: "Fala que a gente conta." });
+    expect(StyleSheet.flatten(titulo.props.style)).toMatchObject({
+      fontSize: 64,
+      lineHeight: 56,
+      letterSpacing: -3,
+      textTransform: "uppercase",
+    });
+
+    const entrar = StyleSheet.flatten(screen.getByRole("button", { name: /entrar/i }).props.style);
+    expect(entrar.backgroundColor).toBe(theme.color.ink);
+    expect(StyleSheet.flatten(screen.getByText("Entrar").props.style)).toMatchObject({
+      color: theme.color.accent,
+      textTransform: "uppercase",
+    });
+    const criar = StyleSheet.flatten(
+      screen.getByRole("button", { name: /criar conta/i }).props.style,
+    );
+    expect(criar.backgroundColor).toBe(theme.color.paper);
+  });
+
+  it("CRIAR CONTA leva para /cadastro", async () => {
+    mockFetch();
+    await render(<LoginScreen />, { wrapper: AppProviders });
+
+    await userEvent.setup().press(screen.getByRole("button", { name: /criar conta/i }));
+
+    expect(router.push).toHaveBeenCalledWith("/cadastro");
   });
 });

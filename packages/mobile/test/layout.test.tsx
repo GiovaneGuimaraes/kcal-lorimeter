@@ -74,7 +74,7 @@ describe("RootLayout (gate de autenticação)", () => {
 
     await user.type(await screen.findByLabelText("E-mail"), "teste@exemplo.com");
     await user.type(screen.getByLabelText("Senha"), "senha-teste-123");
-    await user.press(screen.getByRole("button", { name: "Entrar" }));
+    await user.press(screen.getByRole("button", { name: /entrar/i }));
 
     expect(await screen.findByText("tela inicial")).toBeOnTheScreen();
     expect(router.getPathname()).toBe("/");
