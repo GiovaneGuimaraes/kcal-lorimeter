@@ -33,7 +33,7 @@ describe("MetaScreen", () => {
     await user.type(screen.getByLabelText("Proteína (g)"), "120");
     await user.type(screen.getByLabelText("Carboidrato (g)"), "250");
     await user.type(screen.getByLabelText("Gordura (g)"), "70");
-    await user.press(screen.getByRole("button", { name: "Salvar meta" }));
+    await user.press(screen.getByRole("button", { name: /salvar meta/i }));
 
     await waitFor(() => expect(router.back).toHaveBeenCalled());
     const [init] = callsTo(fetchMock, "PUT", "/goals");
@@ -54,6 +54,16 @@ describe("MetaScreen", () => {
     expect(screen.getByLabelText("Gordura (g)").props.value).toBe("70");
   });
 
+  it("TopBar META DIÁRIA com voltar e hint VALE A PARTIR DE HOJE", async () => {
+    mockFetch().mockResolvedValue(jsonResponse(200, GOAL));
+    await render(<MetaScreen />);
+
+    expect(screen.getByRole("header", { name: "Meta diária" })).toBeOnTheScreen();
+    expect(await screen.findByText("Vale a partir de hoje")).toBeOnTheScreen();
+    await userEvent.setup().press(screen.getByRole("button", { name: "Voltar" }));
+    expect(router.back).toHaveBeenCalled();
+  });
+
   it("campo vazio ou decimal mostra o erro do schema sem chamar PUT", async () => {
     const fetchMock = mockFetch().mockResolvedValue(jsonResponse(200, GOAL));
     await render(<MetaScreen />);
@@ -62,7 +72,7 @@ describe("MetaScreen", () => {
     await user.clear(await screen.findByLabelText("Calorias (kcal)"));
     await user.clear(screen.getByLabelText("Proteína (g)"));
     await user.type(screen.getByLabelText("Proteína (g)"), "1,5");
-    await user.press(screen.getByRole("button", { name: "Salvar meta" }));
+    await user.press(screen.getByRole("button", { name: /salvar meta/i }));
 
     expect(await screen.findByText("Calorias é obrigatório(a)")).toBeOnTheScreen();
     expect(screen.getByText("Proteína deve ser um número inteiro")).toBeOnTheScreen();
