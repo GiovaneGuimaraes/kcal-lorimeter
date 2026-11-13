@@ -4,6 +4,7 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "types": ["jest"],
+    "customConditions": ["react-native", "source"],
     "paths": {
       "@/*": ["./src/*"]
     }

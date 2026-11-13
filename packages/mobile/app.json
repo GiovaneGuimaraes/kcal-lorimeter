@@ -29,7 +29,8 @@
         {
           "microphonePermission": "O kcal-lorimeter usa o microfone para você dizer o que comeu."
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
