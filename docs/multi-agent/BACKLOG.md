@@ -10,12 +10,10 @@
 
 ## Roadmap do MVP (ordem sugerida)
 
-Funcionalidades F1–F8 de [`docs/PRODUTO.md`](../PRODUTO.md). T-001 a T-005, T-009 e T-010 estão feitas; T-006 e T-007 estão no `TODO-AI.md`.
+Funcionalidades F1–F8 de [`docs/PRODUTO.md`](../PRODUTO.md). T-001 a T-007, T-009 e T-010 estão feitas; T-008 e T-011 estão no `TODO-AI.md`.
 
 | Id | Item | Complexidade | Falta para ficar pronto |
 |---|---|---|---|
-| T-008 | **`entries-core` + rotas** (F6/F7): criar/editar/apagar lançamento com snapshot; totais do dia × meta | alta | T-004, T-006, T-007 |
-| T-011 | **`voice-core` + rota de upload** (F5): áudio → STT → extração → casamento → `voice_log` pendente; apaga o áudio | alta | T-006, T-009, T-010 |
 | T-012 | **App: login + gravar áudio** (`expo-audio`, permissão, limite de duração, upload) | alta | T-005, T-011 |
 | T-013 | **App: tela de revisão** (corrigir item, escolher candidato, cadastrar desconhecido, confirmar) | alta | T-008, T-011 |
 | T-014 | **App: painel do dia + histórico + lançamento por texto** (F6/F7/F8) | média | T-008 |
@@ -27,6 +25,8 @@ Funcionalidades F1–F8 de [`docs/PRODUTO.md`](../PRODUTO.md). T-001 a T-005, T-
 - **Quantidade não dita na fala** ("comi frango"): hoje o prompt da extração devolve `quantidade: 1, unidade: "unidade"` como sentinela, indistinguível de "1 ovo". Falta: decidir se o contrato ganha `quantidade` opcional para a tela de revisão pedir o peso (sugestão do revisor da T-010).
 
 - **Fuso horário de "hoje"**: a API usa a data UTC do servidor como default; no Brasil (UTC-3), entre 21h e 24h o servidor já está no dia seguinte. Falta: decidir se o app sempre manda `data` local (recomendado) ou se existe fuso por usuário. Afeta T-008 (entries) e T-014 (painel).
+
+- **Calibrar o casamento por similaridade** com frases reais: "macarrão" sugere "Maçã" (Dice 0,57 no apelido "maca"). O match carrega toda a base em memória; ok no MVP.
 
 ## Candidatas (fora do MVP — o orquestrador puxa daqui depois)
 

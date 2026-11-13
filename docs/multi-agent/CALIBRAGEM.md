@@ -15,6 +15,7 @@ aqui o que **muda uma decisão futura** de roteamento; o resto vai no corpo da P
 | T-002 seed | média | Sonnet 5.5 | 1 | 0 — dados de memória do modelo (H-009) |
 | T-005 auth | alta | Opus 5.5 | 1 | 0 — 2 sugestões (log do onError, dev:api não exercitado) |
 | T-007 goals | média | Sonnet 5.5 | 1 | 0 — 2 sugestões (fuso de "hoje") |
+| T-006 foods | alta | Opus 5.5 | 1 | 0 — 3 sugestões (falso positivo por trigramas) |
 
 ## Onde as reprovações caem
 

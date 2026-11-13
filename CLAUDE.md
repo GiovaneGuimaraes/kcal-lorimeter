@@ -31,6 +31,8 @@ packages/
   stt/       @kcal/stt       — transcribe() Whisper (fetch injetado) + createFakeTranscriber
   llm/       @kcal/llm       — createItemExtractor({client}) com Claude Haiku 5.5, saída estruturada Zod
   auth-core/ @kcal/auth-core — scrypt + JWT (jose v5); registerUser, authenticate, signSession, verifySession
+  foods-core/ @kcal/foods-core — listFoods, createFood, updateFood, matchFood (exato → trecho → trigramas ≥ 0,5), normalizeFoodText
+  goals-core/ @kcal/goals-core — setGoal, getGoalForDate (vigente ≤ data)
   mobile/    @kcal/mobile    — Expo SDK 58 + Expo Router (src/app/), expo-audio; jest-expo + RNTL
 ```
 
