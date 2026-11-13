@@ -15,6 +15,7 @@
     "@kcal/auth-core": "workspace:*",
     "@kcal/db": "workspace:*",
     "@kcal/goals-core": "workspace:*",
+    "@kcal/foods-core": "workspace:*",
     "@kcal/shared": "workspace:*",
     "dotenv": "^17.4.2",
     "hono": "^4.10.0",
