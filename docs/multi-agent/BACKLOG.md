@@ -10,13 +10,10 @@
 
 ## Roadmap do MVP (ordem sugerida)
 
-Funcionalidades F1–F8 de [`docs/PRODUTO.md`](../PRODUTO.md). T-001, T-003, T-004, T-009 e T-010
-já estão no `TODO-AI.md`.
+Funcionalidades F1–F8 de [`docs/PRODUTO.md`](../PRODUTO.md). T-001, T-003, T-004, T-009 e T-010 estão feitas; T-002 e T-005 estão no `TODO-AI.md`.
 
 | Id | Item | Complexidade | Falta para ficar pronto |
 |---|---|---|---|
-| T-002 | **Seed de alimentos padrão** (F3): ~40 alimentos (TACO + "rótulo médio"), macros por 100 g, apelidos, fonte; `seedDefaultFoods(db)` idempotente | média | T-003 (formato) |
-| T-005 | **`auth-core` + rotas** (F1): cadastro, login (scrypt + JWT `jose`), middleware que injeta `userId`; toda rota de dado exige usuário | alta | T-003 |
 | T-006 | **`foods-core` + rotas** (F3/F4): listar padrões + da pessoa, criar/editar próprio, `matchFood(text)` (nome, apelidos, depois aproximado) | alta | T-002, T-005 |
 | T-007 | **`goals-core` + rotas** (F2): CRUD da meta diária | média | T-005 |
 | T-008 | **`entries-core` + rotas** (F6/F7): criar/editar/apagar lançamento com snapshot; totais do dia × meta | alta | T-004, T-006, T-007 |
@@ -26,6 +23,10 @@ já estão no `TODO-AI.md`.
 | T-014 | **App: painel do dia + histórico + lançamento por texto** (F6/F7/F8) | média | T-008 |
 | T-015 | **Deploy da API** | alta | decisão de hospedagem (fora do escopo agora) |
 | T-016 | **Distribuição do app**: `eas.json` com perfis, build interno | média | H-007 |
+
+## Decisões de produto pendentes de brief
+
+- **Quantidade não dita na fala** ("comi frango"): hoje o prompt da extração devolve `quantidade: 1, unidade: "unidade"` como sentinela, indistinguível de "1 ovo". Falta: decidir se o contrato ganha `quantidade` opcional para a tela de revisão pedir o peso (sugestão do revisor da T-010).
 
 ## Candidatas (fora do MVP — o orquestrador puxa daqui depois)
 
