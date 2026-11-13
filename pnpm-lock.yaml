@@ -79,6 +79,12 @@ importers:
         specifier: ~6.0.3
         version: 6.0.3
 
+  packages/nutrition-core:
+    dependencies:
+      '@kcal/shared':
+        specifier: workspace:*
+        version: link:../shared
+
   packages/rest-api:
     dependencies:
       '@hono/node-server':
