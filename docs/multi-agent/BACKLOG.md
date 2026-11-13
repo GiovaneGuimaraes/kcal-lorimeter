@@ -10,7 +10,7 @@
 
 ## Roadmap do MVP (ordem sugerida)
 
-Funcionalidades F1–F8 de [`docs/PRODUTO.md`](../PRODUTO.md). **MVP (T-001 a T-014) implementado e integrado.** T-017 (ciclo do voice_log) está no `TODO-AI.md`.
+Funcionalidades F1–F8 de [`docs/PRODUTO.md`](../PRODUTO.md). **MVP (T-001 a T-014, T-017) mergeado na `main`.** Onda atual (handoff design D): T-018 a T-024 no `TODO-AI.md`.
 
 | Id | Item | Complexidade | Falta para ficar pronto |
 |---|---|---|---|
@@ -31,6 +31,11 @@ Funcionalidades F1–F8 de [`docs/PRODUTO.md`](../PRODUTO.md). **MVP (T-001 a T-
 - **Flake no jest do mobile**: `login.test.tsx` falhou 1× em 4 execuções da suíte completa do workspace (passa isolado e em 3 execuções seguidas). Se repetir, investigar timers/`act` em `home.test.tsx`.
 - **Unificar `src/api/review-entries.ts` com `src/api/entries.ts`** no mobile (criados em paralelo por T-013 e T-014).
 - **Meta retroativa**: definir meta olhando um dia passado não cobre aquele dia (`vigenteDesde` = hoje). Decisão de produto.
+
+- **T-025 — F-3**: apagar transcrição/extração ao descartar (e ao confirmar?). Falta: H-011.
+- **F-7 web + F-8**: CORS em dev, `react-native-web`, `react-dom` alinhado; `GET /goals` 200 null. Falta: H-014.
+- **Guardar quantidade e unidade originais do lançamento** (hoje só gramas): a linha do painel mostraria "1 scoop". Falta: migração em `meal_entries`.
+- **Alimento líquido** (`ml` só quando fizer sentido): campo `liquido` em `foods` + seed. Falta: decisão de produto.
 
 ## Candidatas (fora do MVP — o orquestrador puxa daqui depois)
 

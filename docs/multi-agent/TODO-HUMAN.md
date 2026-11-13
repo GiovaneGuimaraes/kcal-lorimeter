@@ -26,6 +26,39 @@
 
 ## Abertos
 
+### [2026-11-13] H-014 — Versão web entra no escopo? (F-7 e F-8 do handoff)
+- **Origem**: orquestrador (handoff design D)
+- **Bloqueia**: F-7 (CORS, react-native-web, react-dom) e F-8 (GET /goals 200 null).
+- **Pergunta**: o MVP é nativo. A web só importa para testar no navegador (como a sessão de review
+  fez) ou para um dia ter versão web. Fazer agora?
+- **Recomendação**: sim, só o F-7 (é pequeno e destrava teste automatizado com Playwright no CI);
+  F-8 fica como está.
+- **Resposta do humano**: _(preencher)_
+
+### [2026-11-13] H-013 — Logo: a "logo 5" provisória serve?
+- **Origem**: orquestrador (handoff § 2.5)
+- **Bloqueia**: nada — T-021 usa a logo 5 como provisória.
+- **Pergunta**: há 6 opções no canvas. Qual fica? Pode responder depois; trocar é só o SVG e os PNGs.
+- **Recomendação**: seguir com a 5 e decidir quando ver no aparelho.
+- **Resposta do humano**: _(preencher)_
+
+### [2026-11-13] H-012 — Gravar: "segure e fale" ou "toque para começar / toque para parar"?
+- **Origem**: orquestrador (handoff § 2.4.3 item 6)
+- **Bloqueia**: nada — T-023 implementa **tocar/tocar** com o rótulo "TOQUE E FALE" (fallback do
+  handoff). Se você preferir segurar, vira tarefa pequena depois.
+- **Recomendação**: tocar/tocar (melhor acessibilidade; não exige manter o dedo).
+- **Resposta do humano**: _(preencher)_
+
+### [2026-11-13] H-011 — Apagar a transcrição ao descartar? Por quanto tempo guardar as confirmadas?
+- **Origem**: orquestrador (handoff F-3)
+- **Bloqueia**: T-025 (apagar texto e extração no UPDATE de descarte).
+- **Pergunta**: hoje a transcrição fica gravada mesmo depois de "descartado". É dado de saúde e a
+  pessoa desistiu dela. Apagar ao descartar? E as confirmadas: guardar para sempre, 30 dias, ou
+  apagar ao confirmar (o lançamento já tem o snapshot)?
+- **Recomendação**: apagar ao descartar **e** apagar a transcrição ao confirmar (manter só status e
+  datas). Menos dado sensível parado no banco.
+- **Resposta do humano**: _(preencher)_
+
 ### [2026-11-12] H-010 — Testar a primeira versão no aparelho (verificação nível 4)
 - **Origem**: orquestrador (T-012, T-013, T-014)
 - **Bloqueia**: nada no código. É o que falta para o MVP ser "visto funcionando".

@@ -18,8 +18,10 @@ com a base de alimentos, pede confirmação e soma os macros do dia. Detalhe em
   API integrada feito pelo orquestrador (register → meta → lançamento → painel → voz sem chave → 503).
 - **PR #2 mergeada na `main` (2026-11-13) com CI verde.** Merge passou a modo auto (H-006,
   opção b): revisor `APROVADA` + CI verde na PR → o orquestrador mergeia.
-- **Fila vazia.** O que falta é humano: H-010 (testar no aparelho), H-009 (conferir seed TACO),
-  H-008 (chaves), H-007 (contas de distribuição).
+- **Onda 2 (2026-11-13)**: `docs/HANDOFF-DESIGN-D.md` trouxe 8 correções da review e o visual D
+  "Cartaz". Fila: T-018/T-019/T-020 em paralelo → T-021 (tema) → T-022/T-023/T-024 (telas).
+  Decisões novas: H-011 a H-014 (T-025 e F-7 esperam).
+- Pendências humanas antigas: H-010 (aparelho), H-009 (seed TACO), H-008 (chaves), H-007 (contas).
 - **Próximo ciclo**: promover do `BACKLOG` o que o teste no aparelho revelar; depois T-016
   (EAS) quando H-007 for respondida.
 
