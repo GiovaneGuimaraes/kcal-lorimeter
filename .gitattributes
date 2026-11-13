@@ -1,0 +1,4 @@
+# LF em todo arquivo de texto, inclusive no Windows: o Biome formata com LF e o
+# `pnpm format:check` falharia em checkouts com CRLF (core.autocrlf=true).
+* text=auto eol=lf
+*.png binary
