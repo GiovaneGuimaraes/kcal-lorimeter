@@ -9,18 +9,18 @@ Contador de calorias por voz: a pessoa grava o que comeu, o app transcreve, extr
 com a base de alimentos, pede confirmação e soma os macros do dia. Detalhe em
 [`docs/PRODUTO.md`](../PRODUTO.md); regras técnicas em [`CLAUDE.md`](../../CLAUDE.md).
 
-## Estado atual (2026-11-08 — fase 0)
+## Estado atual (2026-11-12 — fase 1, primeira versão)
 
 > Substitua esta seção a cada ciclo; não acumule. O que foi feito vive nas PRs e no git.
 
-- **Só documentação.** Sem código, sem CI, sem `package.json`.
-- **Decidido**: o app mobile é **Expo** (H-001, ver `CLAUDE.md` § Stack).
-- **Bloqueio principal**: as decisões abertas do `TODO-HUMAN.md` (back-end, transcrição, extração,
-  banco/hospedagem, fonte dos dados padrão, modo de merge, contas de distribuição). Todas têm uma
-  recomendação marcada; o humano pode responder só "ok".
-- **Próximo passo assim que H-001b e H-004 forem respondidas**: promover T-001 (scaffold, com o
-  app Expo) do `BACKLOG` para o `TODO-AI`, com o brief completo.
-- **Merge**: manual pelo humano até H-006.
+- **Stack decidida** (H-001 a H-005, ver `CLAUDE.md` § Stack): pnpm + TS strict, Jest, Biome,
+  Hono local, SQLite + Drizzle, auth própria, Whisper, Claude Haiku 5.5, TACO.
+- **Fila** (`TODO-AI.md`): T-001 (scaffold) primeiro; depois T-003, T-004, T-009, T-010 em
+  paralelo (sem arquivos em comum). O resto do MVP está no `BACKLOG` com as dependências.
+- **Integração** (H-006): branches aprovadas são mergeadas pelo orquestrador na branch de trabalho
+  `GiovaneGuimaraes/kcal-lorimeter`; a PR dela para a `main` é do humano.
+- **Pendências abertas**: H-007 (contas de distribuição) e H-008 (chaves de API) — nenhuma
+  bloqueia código.
 
 ## Como operar
 
