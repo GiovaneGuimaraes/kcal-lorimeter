@@ -11,27 +11,6 @@
 
 ## Fila
 
-### T-008 — `entries-core` + rotas: lançamentos com snapshot e totais do dia
-- **Status**: EM_ANDAMENTO · **Complexidade**: alta · **Depende de**: T-004, T-006, T-007
-- **Objetivo**: `packages/entries-core` (`@kcal/entries-core`), `db` injetado: `createEntry(db,
-  userId, {data, refeicao, foodId, quantidade, unidade, origem, voiceLogId?})` → converte com
-  `gramsFromQuantity` + `macrosForGrams` do `nutrition-core` e grava o **snapshot**;
-  `updateEntry` (quantidade/refeicao/data; recalcula snapshot a partir do alimento **atual**),
-  `deleteEntry`, `listEntriesForDate(db, userId, data)` agrupado por refeição, `getDaySummary(db,
-  userId, data)` → `{ consumido: Macros, meta: GoalDto | null, restante, entradas }` usando
-  `sumMacros` + `getGoalForDate`. Alimento deve ser visível ao usuário (padrão ou dele); senão
-  404. Rotas com `requireUser`: `GET /days/:data` (resumo + lançamentos), `POST /entries`,
-  `PATCH /entries/:id`, `DELETE /entries/:id`. `server.ts` roda `seedDefaultFoods(db)` no boot.
-  Schemas em `@kcal/shared` (`src/entries.ts`); `refeicao` ∈ cafe|almoco|lanche|jantar.
-- **Propósito**: o painel do dia (F7) e o histórico (F8) só leem daqui; editar alimento não
-  muda dias passados.
-- **Fora de escopo**: voz, UI, refeições favoritas, exportação.
-- **Critério de aceite**: `pnpm --filter @kcal/entries-core test` e `rest-api test` verdes: 200 g
-  de arroz grava snapshot = 2 × valor/100 g; editar o alimento depois **não** muda a entrada;
-  unidade `scoop` sem porção → 400; alimento de outro usuário → 404; resumo soma só do dia e do
-  usuário; `restante` = meta − consumido (null sem meta); DELETE de outro → 404.
-- **Verificação**: 1.
-
 ### T-011 — `voice-core` + rota de upload: áudio → transcrição → extração → casamento
 - **Status**: EM_ANDAMENTO · **Complexidade**: alta · **Depende de**: T-006, T-009, T-010
 - **Objetivo**: `packages/voice-core` (`@kcal/voice-core`): `processVoice({db, transcriber,

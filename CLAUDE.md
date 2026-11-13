@@ -33,6 +33,7 @@ packages/
   auth-core/ @kcal/auth-core — scrypt + JWT (jose v5); registerUser, authenticate, signSession, verifySession
   foods-core/ @kcal/foods-core — listFoods, createFood, updateFood, matchFood (exato → trecho → trigramas ≥ 0,5), normalizeFoodText
   goals-core/ @kcal/goals-core — setGoal, getGoalForDate (vigente ≤ data)
+  entries-core/ @kcal/entries-core — createEntry/updateEntry/deleteEntry com snapshot, getDaySummary; PATCH só de refeição/data NÃO recalcula o snapshot
   mobile/    @kcal/mobile    — Expo SDK 58 + Expo Router (src/app/), expo-audio; jest-expo + RNTL
 ```
 
