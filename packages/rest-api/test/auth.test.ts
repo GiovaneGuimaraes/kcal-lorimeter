@@ -73,7 +73,10 @@ describe("POST /auth/register", () => {
 
     expect(res.status).toBe(500);
     const texto = await res.text();
-    expect(JSON.parse(texto)).toEqual({ erro: "Erro interno do servidor" });
+    expect(JSON.parse(texto)).toEqual({
+      erro: "Erro interno do servidor",
+      id: expect.any(String),
+    });
     expect(texto).not.toMatch(/detalhe-interno-secreto|at |\.ts/);
     expect(spy).toHaveBeenCalled();
     spy.mockRestore();
