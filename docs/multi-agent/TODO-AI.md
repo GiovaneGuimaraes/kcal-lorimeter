@@ -29,17 +29,3 @@
   cozido" via apelido; "frango" devolve candidatos (grelhado, cozido…); "xyz" → none;
   "Frangô" (acento/caixa) casa; próprio da pessoa ganha empate; PATCH em padrão → 404.
 - **Verificação**: 1.
-
-### T-007 — `goals-core` + rotas: meta diária
-- **Status**: EM_ANDAMENTO · **Complexidade**: média · **Depende de**: T-005
-- **Objetivo**: `packages/goals-core` (`@kcal/goals-core`): `setGoal(db, userId, {kcal,
-  proteinaG, carboG, gorduraG, vigenteDesde?})` (insere nova linha; histórico preservado),
-  `getGoalForDate(db, userId, data)` (a vigente mais recente ≤ data; null se nenhuma).
-  Rotas `GET /goals?data=` e `PUT /goals` com `requireUser`. Schemas em `@kcal/shared`
-  (`src/goals.ts`): inteiros ≥ 0, kcal ≤ 20000, g ≤ 2000.
-- **Propósito**: o painel do dia compara consumido × meta vigente naquele dia.
-- **Fora de escopo**: sugerir meta, cálculo de TMB, UI.
-- **Critério de aceite**: `pnpm --filter @kcal/goals-core test` e `rest-api test` verdes: sem
-  meta → null/404; duas metas (ontem e hoje) → ontem devolve a antiga, hoje a nova; outro usuário
-  não vê; `PUT` com valor negativo → 400.
-- **Verificação**: 1.
