@@ -157,6 +157,9 @@ importers:
       '@kcal/db':
         specifier: workspace:*
         version: link:../db
+      '@kcal/foods-core':
+        specifier: workspace:*
+        version: link:../foods-core
       '@kcal/shared':
         specifier: workspace:*
         version: link:../shared
