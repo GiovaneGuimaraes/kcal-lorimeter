@@ -7,11 +7,32 @@ trabalho é feito: [`docs/multi-agent/README.md`](docs/multi-agent/README.md).
 
 ## Estado
 
-**Fase 0 — só documentação.** Não existe código, `package.json`, CI nem comandos. A stack está
-proposta abaixo, mas **pendente de confirmação** em `docs/multi-agent/TODO-HUMAN.md` (H-001 a
-H-006). Nenhum executor cria código antes de essas respostas existirem. Quando o scaffold (T-001)
-entrar, esta seção passa a listar os comandos reais (`build`, `lint`, `test`) e deixa de dizer
-"proposta".
+**Scaffold pronto (T-001).** Monorepo pnpm (Node 22+, pnpm 10), comandos na raiz:
+
+| Comando | O que faz |
+|---|---|
+| `pnpm install` | instala tudo (lockfile único; `.npmrc` com `node-linker=hoisted` por causa do Expo) |
+| `pnpm build` | `tsc` para `dist/` em `shared` e `rest-api`; `tsc --noEmit` no `mobile` |
+| `pnpm lint` | `biome lint .` |
+| `pnpm format:check` | `biome format .` (`pnpm format` corrige) |
+| `pnpm test` | Jest em todos os packages (`pnpm -r --if-present test`) |
+| `pnpm dev:api` | sobe a `rest-api` em `http://localhost:${PORT:-3000}` com `tsx watch` |
+
+CI em `.github/workflows/ci.yml` (push e PR): `install --frozen-lockfile`, `lint`, `format:check`,
+`test`, `build`.
+
+```
+biome.json · tsconfig.base.json (strict) · pnpm-workspace.yaml · .env.example
+packages/
+  shared/    @kcal/shared    — schemas Zod/tipos; src/, test/, jest (ts-jest)
+  rest-api/  @kcal/rest-api  — Hono; src/app.ts (app), src/server.ts (porta), test/ via app.request
+  mobile/    @kcal/mobile    — Expo SDK 58 + Expo Router (src/app/), expo-audio; jest-expo + RNTL
+```
+
+Package novo: copie `shared` (ou `rest-api`) — `package.json` com `build`/`test`,
+`tsconfig.json` (typecheck + testes), `tsconfig.build.json` (emite `dist/`), `jest.config.js`,
+testes em `test/`. Dependência entre packages com `workspace:*`; os packages expõem a condição
+`"source"` em `exports` para que testes e `dev:api` usem o `src/` sem build prévio.
 
 ## Stack proposta (aguardando H-001)
 
