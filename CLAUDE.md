@@ -35,7 +35,7 @@ packages/
   goals-core/ @kcal/goals-core — setGoal, getGoalForDate (vigente ≤ data)
   voice-core/ @kcal/voice-core — processVoice/processText/discardVoiceLog; VoiceReview com precisaPeso; áudio nunca em disco
   entries-core/ @kcal/entries-core — createEntry/updateEntry/deleteEntry com snapshot, getDaySummary; PATCH só de refeição/data NÃO recalcula o snapshot
-  mobile/    @kcal/mobile    — Expo SDK 58 + Expo Router (src/app/): login, cadastro, gravação (expo-audio), /revisao; src/api (client com token em expo-secure-store), src/auth/session, src/voice; metro.config.js resolve @kcal/shared pela condição "source"; jest-expo + RNTL
+  mobile/    @kcal/mobile    — Expo SDK 58 + Expo Router (src/app/): login, cadastro, index (gravador + painel do dia), revisao, meta, lancamento; src/api (client com token em expo-secure-store), src/auth, src/voice, src/day, src/ui; metro.config.js resolve @kcal/* pela condição "source"; jest-expo + RNTL
 ```
 
 Package novo: copie `shared` (ou `rest-api`) — `package.json` com `build`/`test`,

@@ -10,7 +10,7 @@
 
 ## Roadmap do MVP (ordem sugerida)
 
-Funcionalidades F1–F8 de [`docs/PRODUTO.md`](../PRODUTO.md). Back-end do MVP (T-001 a T-011) feito; T-012, T-013 e T-014 (app) estão no `TODO-AI.md`.
+Funcionalidades F1–F8 de [`docs/PRODUTO.md`](../PRODUTO.md). **MVP (T-001 a T-014) implementado e integrado.** T-017 (ciclo do voice_log) está no `TODO-AI.md`.
 
 | Id | Item | Complexidade | Falta para ficar pronto |
 |---|---|---|---|
@@ -27,6 +27,10 @@ Funcionalidades F1–F8 de [`docs/PRODUTO.md`](../PRODUTO.md). Back-end do MVP (
 
 - **Limpeza de `voice_logs` pendentes** que nunca foram confirmados nem descartados (acumulam).
 - **README da rest-api** não lista /foods, /goals, /entries, /days: atualizar quando a API estabilizar.
+
+- **Flake no jest do mobile**: `login.test.tsx` falhou 1× em 4 execuções da suíte completa do workspace (passa isolado e em 3 execuções seguidas). Se repetir, investigar timers/`act` em `home.test.tsx`.
+- **Unificar `src/api/review-entries.ts` com `src/api/entries.ts`** no mobile (criados em paralelo por T-013 e T-014).
+- **Meta retroativa**: definir meta olhando um dia passado não cobre aquele dia (`vigenteDesde` = hoje). Decisão de produto.
 
 ## Candidatas (fora do MVP — o orquestrador puxa daqui depois)
 

@@ -11,20 +11,8 @@
 
 ## Fila
 
-### T-014 — App: painel do dia, histórico e lançamento manual
-- **Status**: EM_ANDAMENTO · **Complexidade**: média · **Depende de**: T-008, T-012
-- **Objetivo**: tela inicial vira o painel: `GET /days/:data` → kcal e macros consumidos × meta
-  (barras), lista por refeição com editar (gramas/refeição) e apagar; setas para dia
-  anterior/seguinte (F8); tela de meta (`PUT /goals`); lançamento manual (buscar alimento,
-  informar quantidade) → `POST /entries` origem `manual`. Exibição com `formatMacros`.
-- **Propósito**: F2, F6, F7 e F8.
-- **Fora de escopo**: gráficos semanais, exportar.
-- **Critério de aceite**: RNTL verde: painel renderiza totais arredondados (1 casa g, inteiro
-  kcal) a partir de resposta mockada; navegação de dia muda a data pedida; apagar chama DELETE.
-- **Verificação**: 4 — humano: ver o dia, editar e apagar um lançamento, trocar a meta.
-
 ### T-017 — Fechar o ciclo do `voice_log`: origem texto com vínculo e status `confirmado`
-- **Status**: PENDENTE · **Complexidade**: média · **Depende de**: T-013
+- **Status**: EM_ANDAMENTO · **Complexidade**: média · **Depende de**: T-013
 - **Objetivo**: (1) `CreateEntrySchema` passa a aceitar `voiceLogId` com `origem` ∈ voz|texto
   (hoje só voz; `processText` cria `voice_log` de origem texto e a revisão perde o vínculo).
   (2) `createEntry` com `voiceLogId` marca o `voice_log` como `confirmado` (idempotente; só se
