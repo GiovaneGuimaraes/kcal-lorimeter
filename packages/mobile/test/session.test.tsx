@@ -15,6 +15,7 @@ const getItem = SecureStore.getItemAsync as jest.Mock;
 describe("SessionProvider", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (SecureStore.setItemAsync as jest.Mock).mockResolvedValue(undefined);
   });
 
   it("carrega a sessão salva no boot", async () => {
@@ -38,6 +39,29 @@ describe("SessionProvider", () => {
 
     await waitFor(() => expect(result.current.status).toBe("signedOut"));
     expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith(SESSION_STORAGE_KEY);
+  });
+
+  it("falha ao gravar no SecureStore não derruba o login nem o cadastro (F-1)", async () => {
+    getItem.mockResolvedValue(null);
+    (SecureStore.setItemAsync as jest.Mock).mockRejectedValue(new Error("sem keychain"));
+    const fetchMock = mockFetch().mockResolvedValue(jsonResponse(200, AUTH));
+    const { result } = await renderHook(() => useSession(), { wrapper: SessionProvider });
+    await waitFor(() => expect(result.current.status).toBe("signedOut"));
+
+    await act(() => result.current.signIn({ email: "teste@exemplo.com", senha: "senha-de-teste" }));
+    await waitFor(() => expect(result.current.status).toBe("signedIn"));
+    expect(result.current.token).toBe(AUTH.token);
+
+    await act(() => result.current.signOut());
+    fetchMock.mockResolvedValue(jsonResponse(201, AUTH));
+    await act(() =>
+      result.current.signUp({
+        nome: "Pessoa Teste",
+        email: "teste@exemplo.com",
+        senha: "senha-de-teste",
+      }),
+    );
+    await waitFor(() => expect(result.current.status).toBe("signedIn"));
   });
 
   it("signOut limpa a sessão", async () => {

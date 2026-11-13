@@ -4,12 +4,20 @@ import { router } from "expo-router";
 import type { ReactNode } from "react";
 import { Text } from "react-native";
 import RevisaoScreen from "../src/app/revisao";
+import { SessionProvider } from "../src/auth/session";
 import { localIsoDate } from "../src/voice/review-lines";
 import { type PendingReview, ReviewProvider, useReview } from "../src/voice/review-store";
 import { jsonResponse, mockFetch, REVIEW } from "./helpers";
 
 jest.mock("expo-router", () => ({
   router: { replace: jest.fn(), push: jest.fn(), back: jest.fn(), canGoBack: jest.fn() },
+}));
+
+jest.mock("expo-secure-store", () => ({
+  // Sessão já salva: o ReviewProvider zera a revisão quando a sessão vira `signedOut`.
+  getItemAsync: jest.fn(async () => JSON.stringify(require("./helpers").AUTH)),
+  setItemAsync: jest.fn(async () => {}),
+  deleteItemAsync: jest.fn(async () => {}),
 }));
 
 /** Alimentos inventados: os números são só dados de teste, não valores nutricionais reais. */
@@ -81,10 +89,12 @@ function StoreProbe() {
 async function renderRevisao(review: PendingReview | null) {
   await render(<RevisaoScreen />, {
     wrapper: ({ children }: { children: ReactNode }) => (
-      <ReviewProvider initialReview={review}>
-        {children}
-        <StoreProbe />
-      </ReviewProvider>
+      <SessionProvider>
+        <ReviewProvider initialReview={review}>
+          {children}
+          <StoreProbe />
+        </ReviewProvider>
+      </SessionProvider>
     ),
   });
 }

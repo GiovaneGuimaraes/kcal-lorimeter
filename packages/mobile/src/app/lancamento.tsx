@@ -22,22 +22,8 @@ import { searchFoods } from "../api/foods";
 import { formatDayLabel, mealForHour, todayLocal } from "../day/dates";
 import { ChoiceRow } from "../ui/choice";
 import { Button, colors, ErrorMessage, Field } from "../ui/components";
-import { formatGrams, formatKcal, MEAL_OPTIONS, parseNumber } from "../ui/format";
-
-/** Unidades oferecidas: peso sempre; "porção" só se o alimento tiver porção padrão. */
-function unitOptions(food: FoodDto): { value: QuantityUnit; label: string }[] {
-  const opcoes: { value: QuantityUnit; label: string }[] = [
-    { value: "g", label: "g" },
-    { value: "ml", label: "ml" },
-  ];
-  if (food.porcaoPadraoG) {
-    opcoes.push({
-      value: "unidade",
-      label: `${food.nomePorcao ?? "porção"} (${formatGrams(food.porcaoPadraoG)} g)`,
-    });
-  }
-  return opcoes;
-}
+import { formatKcal, MEAL_OPTIONS, parseNumber } from "../ui/format";
+import { unitOptions } from "../ui/unit-options";
 
 /**
  * Lançamento manual (F6): busca o alimento (`GET /foods?q=`), quantidade + unidade e refeição →

@@ -4,8 +4,8 @@ import {
   type FoodDto,
   MAX_ENTRY_QUANTITY,
   type MealKind,
-  type QuantityUnit,
   QUANTITY_UNITS,
+  type QuantityUnit,
 } from "@kcal/shared";
 import type { PendingReview, ReviewOrigem } from "./review-store";
 
@@ -59,10 +59,15 @@ export function unitNeedsPortion(unidade: QuantityUnit): boolean {
   return !WEIGHT_UNITS.includes(unidade);
 }
 
-/** Unidades oferecidas para o alimento: `g`/`ml` sempre; as de porção só com porção cadastrada. */
+/**
+ * Unidades oferecidas para o alimento: `g` sempre; as de porção só com porção cadastrada. Sem
+ * `ml` (F-5): não há alimento líquido ainda e o servidor trata ml como grama (1:1).
+ */
 export function allowedUnits(food: FoodDto | null): QuantityUnit[] {
-  if (food?.porcaoPadraoG) return [...QUANTITY_UNITS];
-  return [...WEIGHT_UNITS];
+  const oferecidas = (food?.porcaoPadraoG ? QUANTITY_UNITS : WEIGHT_UNITS).filter(
+    (u) => u !== "ml",
+  );
+  return [...oferecidas];
 }
 
 /**

@@ -30,7 +30,7 @@ export function ChoiceRow<T extends string>({
             <Pressable
               key={opt.value}
               accessibilityRole="radio"
-              accessibilityState={{ selected, disabled: !!disabled }}
+              accessibilityState={{ checked: selected, disabled: !!disabled }}
               disabled={disabled}
               onPress={() => onChange(opt.value)}
               style={[styles.chip, selected && styles.chipSelected]}

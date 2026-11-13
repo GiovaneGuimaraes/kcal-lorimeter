@@ -88,10 +88,11 @@ describe("parseQuantidade", () => {
 });
 
 describe("allowedUnits", () => {
-  it("só g/ml sem porção; todas com porção", () => {
-    expect(allowedUnits(null)).toEqual(["g", "ml"]);
-    expect(allowedUnits(food("x", null))).toEqual(["g", "ml"]);
+  it("só g sem porção; g e as de porção com porção; nunca ml", () => {
+    expect(allowedUnits(null)).toEqual(["g"]);
+    expect(allowedUnits(food("x", null))).toEqual(["g"]);
     expect(allowedUnits(food("x", 30))).toContain("scoop");
+    expect(allowedUnits(food("x", 30))).not.toContain("ml");
   });
 });
 
