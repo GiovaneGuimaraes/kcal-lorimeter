@@ -1,8 +1,13 @@
-import { render, screen, userEvent, waitFor } from "@testing-library/react-native";
+import { act, render, screen, userEvent, waitFor } from "@testing-library/react-native";
 import { requestRecordingPermissionsAsync } from "expo-audio";
 import { router } from "expo-router";
+import { deleteItemAsync } from "expo-secure-store";
+import type { ReactNode } from "react";
+import { Alert, type AlertButton, Text } from "react-native";
 import HomeScreen from "../src/app/index";
+import { SessionProvider } from "../src/auth/session";
 import { todayLocal } from "../src/day/dates";
+import { ReviewProvider, useReview } from "../src/voice/review-store";
 import { MIC_DENIED_MESSAGE } from "../src/voice/use-voice-recorder";
 import { callsTo, dayFetch } from "./day-fixtures";
 import { AppProviders, AUTH, jsonResponse, mockFetch, REVIEW } from "./helpers";
@@ -50,7 +55,9 @@ function voiceFetch(resposta: Response): jest.Mock {
 async function renderHome() {
   await render(<HomeScreen />, { wrapper: AppProviders });
   // A sessão carrega do SecureStore no boot.
-  expect(await screen.findByText(`Olá, ${AUTH.user.nome}`)).toBeOnTheScreen();
+  expect(
+    await screen.findByRole("button", { name: `Conta de ${AUTH.user.nome}` }),
+  ).toBeOnTheScreen();
 }
 
 describe("HomeScreen", () => {
@@ -64,7 +71,7 @@ describe("HomeScreen", () => {
     const fetchMock = dayFetch(mockFetch());
     await renderHome();
 
-    await userEvent.setup().press(screen.getByRole("button", { name: "Gravar" }));
+    await userEvent.setup().press(screen.getByRole("button", { name: "Toque e fale" }));
 
     expect(await screen.findByText(MIC_DENIED_MESSAGE)).toBeOnTheScreen();
     expect(requestPermission).toHaveBeenCalledTimes(1);
@@ -77,7 +84,7 @@ describe("HomeScreen", () => {
     dayFetch(mockFetch());
     await renderHome();
 
-    await userEvent.setup().press(screen.getByRole("button", { name: "Gravar" }));
+    await userEvent.setup().press(screen.getByRole("button", { name: "Toque e fale" }));
 
     expect(await screen.findByRole("button", { name: "Abrir configurações" })).toBeOnTheScreen();
   });
@@ -88,8 +95,8 @@ describe("HomeScreen", () => {
     await renderHome();
     const user = userEvent.setup();
 
-    await user.press(screen.getByRole("button", { name: "Gravar" }));
-    await user.press(await screen.findByRole("button", { name: "Parar e enviar" }));
+    await user.press(screen.getByRole("button", { name: "Toque e fale" }));
+    await user.press(await screen.findByRole("button", { name: "Toque para enviar" }));
 
     await waitFor(() => expect(router.push).toHaveBeenCalledWith("/revisao"));
     expect(mockRecorder.prepareToRecordAsync).toHaveBeenCalled();
@@ -110,8 +117,8 @@ describe("HomeScreen", () => {
     await renderHome();
     const user = userEvent.setup();
 
-    await user.press(screen.getByRole("button", { name: "Gravar" }));
-    await user.press(await screen.findByRole("button", { name: "Parar e enviar" }));
+    await user.press(screen.getByRole("button", { name: "Toque e fale" }));
+    await user.press(await screen.findByRole("button", { name: "Toque para enviar" }));
 
     expect(await screen.findByText("Não entendi o áudio. Tente de novo.")).toBeOnTheScreen();
     expect(router.push).not.toHaveBeenCalled();
@@ -124,7 +131,7 @@ describe("HomeScreen", () => {
     const now = jest.spyOn(Date, "now").mockImplementation(() => agora);
     try {
       await renderHome();
-      await userEvent.setup().press(screen.getByRole("button", { name: "Gravar" }));
+      await userEvent.setup().press(screen.getByRole("button", { name: "Toque e fale" }));
       expect(await screen.findByText("0:00 / 1:00")).toBeOnTheScreen();
 
       agora += 60_000;
@@ -141,20 +148,23 @@ describe("HomeScreen", () => {
     await renderHome();
     const user = userEvent.setup();
 
-    await user.type(screen.getByLabelText("Ou digite"), "200 g de arroz");
-    await user.press(screen.getByRole("button", { name: "Enviar texto" }));
+    await user.press(screen.getByRole("button", { name: "Digitar o que comeu" }));
+    await user.type(screen.getByLabelText("O que você comeu?"), "200 g de arroz");
+    await user.press(screen.getByRole("button", { name: "Enviar" }));
 
     await waitFor(() => expect(router.push).toHaveBeenCalledWith("/revisao"));
     const [init] = callsTo(fetchMock, "POST", "/voice/text");
     expect(JSON.parse(init?.body as string)).toEqual({ texto: "200 g de arroz" });
   });
 
-  it("abaixo do gravador mostra o painel de hoje (GET /days/<hoje>)", async () => {
+  it("acima da barra de voz mostra o painel de hoje (GET /days/<hoje>)", async () => {
     const fetchMock = dayFetch(mockFetch());
     await renderHome();
 
-    expect(await screen.findByText("Calorias: 1235 / 2000 kcal")).toBeOnTheScreen();
-    expect(screen.getByRole("button", { name: "Gravar" })).toBeOnTheScreen();
+    // consumido 1234,6 de 2000: ainda cabem 765.
+    expect(await screen.findByText("765")).toBeOnTheScreen();
+    expect(screen.getByText("AINDA CABEM")).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "Toque e fale" })).toBeOnTheScreen();
     expect(callsTo(fetchMock, "GET", `/days/${todayLocal()}`)).toHaveLength(1);
   });
 
@@ -162,9 +172,76 @@ describe("HomeScreen", () => {
     const fetchMock = dayFetch(mockFetch());
     await renderHome();
 
-    await userEvent.setup().press(screen.getByRole("button", { name: "Enviar texto" }));
+    const user = userEvent.setup();
+    await user.press(screen.getByRole("button", { name: "Digitar o que comeu" }));
+    await user.press(screen.getByRole("button", { name: "Enviar" }));
 
     expect(await screen.findByText("Texto é obrigatório")).toBeOnTheScreen();
     expect(callsTo(fetchMock, "POST", "/voice/text")).toHaveLength(0);
   });
+
+  it("cabeçalho mostra as iniciais; 'Sair' no menu da conta encerra a sessão e zera a revisão (F-2)", async () => {
+    dayFetch(mockFetch());
+    const alert = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+    await render(<HomeScreen />, { wrapper: ComRevisao });
+    const conta = await screen.findByRole("button", { name: `Conta de ${AUTH.user.nome}` });
+    expect(screen.getByText("PT")).toBeOnTheScreen();
+    expect(screen.getByText("com revisão")).toBeOnTheScreen();
+
+    await userEvent.setup().press(conta);
+    expect(alert).toHaveBeenCalledTimes(1);
+    const botoes = (alert.mock.calls[0]?.[2] ?? []) as AlertButton[];
+    expect(botoes.map((b) => b.text)).toEqual(["Cancelar", "Sair"]);
+
+    await act(async () => {
+      botoes.find((b) => b.text === "Sair")?.onPress?.();
+    });
+
+    expect(deleteItemAsync).toHaveBeenCalled();
+    expect(await screen.findByText("sem revisão")).toBeOnTheScreen();
+    alert.mockRestore();
+  });
+
+  it("'Cancelar' no menu da conta não sai", async () => {
+    dayFetch(mockFetch());
+    const alert = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+    await renderHome();
+
+    await userEvent
+      .setup()
+      .press(screen.getByRole("button", { name: `Conta de ${AUTH.user.nome}` }));
+    const botoes = (alert.mock.calls[0]?.[2] ?? []) as AlertButton[];
+    expect(botoes.find((b) => b.text === "Cancelar")?.onPress).toBeUndefined();
+    expect(deleteItemAsync).not.toHaveBeenCalled();
+    alert.mockRestore();
+  });
+
+  it("gravando, o botão vira 'Toque para enviar' com o relógio e o lápis fica indisponível", async () => {
+    permissao(true);
+    voiceFetch(jsonResponse(200, REVIEW));
+    await renderHome();
+
+    await userEvent.setup().press(screen.getByRole("button", { name: "Toque e fale" }));
+
+    expect(await screen.findByRole("button", { name: "Toque para enviar" })).toBeOnTheScreen();
+    expect(screen.getByText("0:00 / 1:00")).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "Digitar o que comeu" })).toBeDisabled();
+  });
 });
+
+/** Revisão pendente no contexto + um leitor, para ver o `ReviewProvider` zerar ao sair. */
+function ComRevisao({ children }: { children: ReactNode }) {
+  return (
+    <SessionProvider>
+      <ReviewProvider initialReview={REVIEW}>
+        {children}
+        <EstadoRevisao />
+      </ReviewProvider>
+    </SessionProvider>
+  );
+}
+
+function EstadoRevisao() {
+  const { review } = useReview();
+  return <Text>{review ? "com revisão" : "sem revisão"}</Text>;
+}
