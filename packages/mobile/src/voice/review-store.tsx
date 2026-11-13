@@ -1,5 +1,6 @@
 import type { VoiceReview } from "@kcal/shared";
-import { createContext, type ReactNode, useContext, useMemo, useState } from "react";
+import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from "react";
+import { useSession } from "../auth/session";
 
 /** Como a revisão foi pedida: gravação (`POST /voice`) ou texto digitado (`POST /voice/text`). */
 export type ReviewOrigem = "voz" | "texto";
@@ -30,7 +31,12 @@ export function ReviewProvider({
   children: ReactNode;
   initialReview?: PendingReview | null;
 }) {
+  const { status } = useSession();
   const [review, setReview] = useState<PendingReview | null>(initialReview);
+  // Sair (ou 401 automático) descarta a transcrição pendente: outra conta no mesmo aparelho não a vê.
+  useEffect(() => {
+    if (status === "signedOut") setReview(null);
+  }, [status]);
   const value = useMemo(() => ({ review, setReview }), [review]);
   return <ReviewContext.Provider value={value}>{children}</ReviewContext.Provider>;
 }
