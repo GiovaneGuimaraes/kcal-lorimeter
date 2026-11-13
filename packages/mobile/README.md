@@ -46,7 +46,7 @@ npx expo-doctor                    # (dentro de packages/mobile)
 | `src/app/_layout.tsx` | Providers + gate de autenticação (`Stack.Protected`): sem sessão → `/login` |
 | `src/app/login.tsx`, `cadastro.tsx` | Entrar / criar conta (validação com os schemas do `@kcal/shared`) |
 | `src/app/index.tsx` | Tela inicial: gravar (até 60 s) ou digitar → `POST /voice` / `POST /voice/text` |
-| `src/app/revisao.tsx` | Revisão do que foi entendido (placeholder até a T-013) |
+| `src/app/revisao.tsx` | Revisão: troca/busca/cadastra alimento, quantidade, refeição → `POST /entries` por item; ou descarta |
 | `src/api/` | Cliente HTTP (`Authorization: Bearer`, erros `{ erro }` → `ApiError`) |
 | `src/auth/session.tsx` | Sessão (`token` + `user`) no `expo-secure-store` |
 | `src/voice/` | Gravador (`expo-audio`) e a revisão em memória entre telas |
