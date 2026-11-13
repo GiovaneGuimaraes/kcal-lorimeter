@@ -1,4 +1,4 @@
-import { VoiceReviewSchema, VoiceTextBodySchema } from "../src";
+import { VoiceReviewItemSchema, VoiceReviewSchema, VoiceTextBodySchema } from "../src";
 
 describe("VoiceTextBodySchema", () => {
   it("apara o texto", () => {
@@ -56,5 +56,38 @@ describe("VoiceReviewSchema", () => {
       ],
     };
     expect(VoiceReviewSchema.parse(review)).toEqual(review);
+  });
+
+  describe("macros por item", () => {
+    const semMacros = {
+      extraido: { alimento: "arroz", quantidade: 200, unidade: "g" },
+      match: { kind: "none" },
+      gramas: 200,
+      precisaPeso: false,
+    };
+
+    it("item com macros (sem arredondar) passa e os mantém", () => {
+      const item = {
+        ...semMacros,
+        macros: { kcal: 256.4, proteinaG: 5.1, carboG: 56.2, gorduraG: 0.4 },
+      };
+      expect(VoiceReviewItemSchema.parse(item)).toEqual(item);
+    });
+
+    it("contrato antigo, sem macros, continua válido e não ganha macros", () => {
+      const parsed = VoiceReviewItemSchema.parse(semMacros);
+      expect(parsed).toEqual(semMacros);
+      expect(parsed).not.toHaveProperty("macros");
+    });
+
+    it("macros com campo faltando falha", () => {
+      const item = { ...semMacros, macros: { kcal: 256, proteinaG: 5, carboG: 56 } };
+      expect(VoiceReviewItemSchema.safeParse(item).success).toBe(false);
+    });
+
+    it("macros com campo não numérico falha", () => {
+      const item = { ...semMacros, macros: { kcal: "256", proteinaG: 5, carboG: 56, gorduraG: 0 } };
+      expect(VoiceReviewItemSchema.safeParse(item).success).toBe(false);
+    });
   });
 });

@@ -83,13 +83,63 @@ describe("voice-core", () => {
       });
     });
 
-    it("nunca devolve macros: a revisão só tem extraído, casamento e gramas", async () => {
+    it("a revisão só tem extraído, casamento, gramas, macros e precisaPeso; extraído sem kcal", async () => {
       const review = await processVoice(deps(), ana, AUDIO_FALSO);
-      const permitidas = new Set(["extraido", "match", "gramas", "precisaPeso"]);
+      const permitidas = new Set(["extraido", "match", "gramas", "macros", "precisaPeso"]);
       for (const item of review.itens) {
         expect(Object.keys(item).filter((k) => !permitidas.has(k))).toEqual([]);
         expect(item.extraido).not.toHaveProperty("kcal");
       }
+    });
+
+    describe("macros por item (nutrition-core, nunca o LLM)", () => {
+      it("200 g de arroz → macros = 2 × valores por 100 g do alimento casado, sem arredondar", async () => {
+        const review = await processVoice(deps(), ana, AUDIO_FALSO);
+        const [arroz] = review.itens;
+        if (arroz?.match.kind !== "exact") throw new Error("arroz deveria casar exact");
+        const f = arroz.match.food;
+        expect(arroz.macros).toEqual({
+          kcal: 2 * f.kcal100g,
+          proteinaG: 2 * f.proteina100g,
+          carboG: 2 * f.carbo100g,
+          gorduraG: 2 * f.gordura100g,
+        });
+      });
+
+      it("unidade com porção padrão: macros das gramas convertidas (2 pães = 2 × porção)", async () => {
+        const extractor = fakeExtractor([
+          { alimento: "pão francês", quantidade: 2, unidade: "unidade" },
+        ]);
+        const [pao] = (await processVoice(deps({ extractor }), ana, AUDIO_FALSO)).itens;
+        if (pao?.match.kind !== "exact" || pao.gramas === undefined)
+          throw new Error("pão deveria converter");
+        expect(pao.macros?.kcal).toBeCloseTo((pao.match.food.kcal100g * pao.gramas) / 100, 10);
+      });
+
+      it("candidates e none → sem macros", async () => {
+        const review = await processVoice(deps(), ana, AUDIO_FALSO);
+        const [, frango, xyz] = review.itens;
+        expect(frango?.match.kind).toBe("candidates");
+        expect(frango).not.toHaveProperty("macros");
+        expect(xyz?.match.kind).toBe("none");
+        expect(xyz).not.toHaveProperty("macros");
+      });
+
+      it("exact com precisaPeso (sem gramas) → sem macros", async () => {
+        criarAlimentoSemPorcao(handle, ana, "Whey da Ana", ["whey"]);
+        const extractor = fakeExtractor([{ alimento: "whey", quantidade: 1, unidade: "scoop" }]);
+        const [whey] = (await processVoice(deps({ extractor }), ana, AUDIO_FALSO)).itens;
+        expect(whey?.match.kind).toBe("exact");
+        expect(whey?.precisaPeso).toBe(true);
+        expect(whey).not.toHaveProperty("macros");
+      });
+
+      it("alimento da pessoa: usa os valores dele (100 kcal/100 g × 30 g = 30 kcal)", async () => {
+        criarAlimentoSemPorcao(handle, ana, "Whey da Ana", ["whey"]);
+        const extractor = fakeExtractor([{ alimento: "whey", quantidade: 30, unidade: "g" }]);
+        const [whey] = (await processVoice(deps({ extractor }), ana, AUDIO_FALSO)).itens;
+        expect(whey?.macros).toEqual({ kcal: 30, proteinaG: 3, carboG: 3, gorduraG: 0.3 });
+      });
     });
 
     it("passa o áudio ao transcriber como veio (bytes e mime)", async () => {
