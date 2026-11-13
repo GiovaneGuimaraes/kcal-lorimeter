@@ -10,12 +10,11 @@ Expo ships breaking changes every SDK release. APIs you remember are likely rena
 
 ## Commands
 
-Use `bunx` instead of `npx` if the project uses bun (`bun.lock` present).
+Este package faz parte do monorepo pnpm do kcal-lorimeter: as regras do `CLAUDE.md` da raiz prevalecem. Lint e formatação são do Biome (`pnpm lint`, `pnpm format:check` na raiz), não `expo lint`. Testes: `pnpm --filter @kcal/mobile test` (jest-expo).
 
 ```bash
 npx expo install <package>  # ALWAYS use instead of npm/yarn/pnpm/bun add — resolves SDK-compatible versions
 npx expo start              # start the dev server
-npx expo lint               # lint
 npx tsc --noEmit            # typecheck
 npx expo-doctor             # diagnose dependency and config issues
 npx expo install --fix      # fix incompatible package versions

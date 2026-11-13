@@ -61,3 +61,7 @@ com a base de alimentos, pede confirmação e soma os macros do dia. Detalhe em
 - Corpo de PR sempre via `--body-file`.
 - Teste com data: ancore em data relativa ("hoje", "ontem"), nunca fixa — teste envelhece.
 - Com Haiku, confira o diff, não a prosa: ele já entregou código certo com relatório errado.
+- Worktree do executor pode nascer de uma base diferente da branch do orquestrador (T-001 nasceu da
+  `main`): diga no prompt qual branch é a base e confira `git merge-base` antes de integrar.
+- No Windows, `tsx watch` deixa node órfão na porta 3000 quando o pnpm é morto: matar pelo PID
+  (`Get-NetTCPConnection -LocalPort 3000`).

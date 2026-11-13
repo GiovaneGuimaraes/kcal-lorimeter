@@ -7,7 +7,7 @@ aqui o que **muda uma decisão futura** de roteamento; o resto vai no corpo da P
 
 | Tarefa | Complexidade | Executor | Ciclos | Reprovações (causa) |
 |---|---|---|---|---|
-| _(nenhuma tarefa executada ainda)_ | | | | |
+| T-001 scaffold | alta | Opus 5.5 | 1 | 0 — 4 sugestões (AGENTS.md do template, conflito de CLAUDE.md por base antiga do worktree) |
 
 ## Onde as reprovações caem
 

@@ -11,23 +11,6 @@
 
 ## Fila
 
-### T-001 — Scaffold do monorepo (pnpm + TS + Jest + Biome + Hono + Expo + CI)
-- **Status**: PENDENTE · **Complexidade**: alta · **Depende de**: —
-- **Objetivo**: criar a base do repo conforme `CLAUDE.md` § Stack: raiz com `pnpm-workspace.yaml`,
-  `.npmrc` (`node-linker=hoisted`), `tsconfig.base.json` strict, `biome.json`, Jest por package,
-  scripts raiz `build` / `lint` / `format:check` / `test` / `dev:api`, `.gitignore`, `.env.example`
-  (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `JWT_SECRET`, `DB_PATH`), CI em
-  `.github/workflows/ci.yml`. Packages: `shared` (`@kcal/shared`, zod, 1 teste), `rest-api`
-  (`@kcal/rest-api`, Hono + `@hono/node-server`, `GET /health` → `{"ok":true}`, 1 teste via
-  `app.request`), `mobile` (`create-expo-app` com Expo Router, template TypeScript, ajustado pelo
-  guia oficial de monorepos do Expo; `jest-expo` com 1 teste de render de tela em pt-BR).
-  Atualizar `CLAUDE.md` § Estado com os comandos reais e reescrever `README.md` da raiz em UTF-8.
-- **Propósito**: todo executor seguinte só adiciona package e teste, sem tocar config.
-- **Fora de escopo**: banco, auth, telas reais, qualquer regra de domínio.
-- **Critério de aceite**: na raiz, `pnpm install`, `pnpm lint`, `pnpm test`, `pnpm build` verdes;
-  `pnpm dev:api` sobe e `curl localhost:3000/health` devolve `{"ok":true}`.
-- **Verificação**: 2 (colar a chamada ao `/health` e as linhas finais de `pnpm test`).
-
 ### T-004 — `nutrition-core`: cálculo de macros (funções puras)
 - **Status**: PENDENTE · **Complexidade**: alta · **Depende de**: T-001
 - **Objetivo**: `packages/nutrition-core` (`@kcal/nutrition-core`), uma função por arquivo:
