@@ -1,3 +1,4 @@
+import { formatMacros, macrosForGrams } from "@kcal/nutrition-core";
 import type { EntryDto, FoodDto } from "@kcal/shared";
 import { render, screen, userEvent, waitFor } from "@testing-library/react-native";
 import { router } from "expo-router";
@@ -21,12 +22,17 @@ jest.mock("expo-secure-store", () => ({
 }));
 
 /** Alimentos inventados: os números são só dados de teste, não valores nutricionais reais. */
-function food(id: string, nome: string, porcaoPadraoG: number | null = null): FoodDto {
+function food(
+  id: string,
+  nome: string,
+  porcaoPadraoG: number | null = null,
+  kcal100g = 100,
+): FoodDto {
   return {
     id,
     nome,
     apelidos: [],
-    kcal100g: 100,
+    kcal100g,
     proteina100g: 10,
     carbo100g: 10,
     gordura100g: 1,
@@ -69,12 +75,15 @@ const DOIS_ITENS: PendingReview = {
       extraido: { alimento: "arroz", quantidade: 200, unidade: "g", refeicao: "almoco" },
       match: { kind: "exact", food: ARROZ },
       gramas: 200,
+      // Como o servidor manda (T-020): macros de `gramas` pelo nutrition-core.
+      macros: { kcal: 200, proteinaG: 20, carboG: 20, gorduraG: 2 },
       precisaPeso: false,
     },
     {
       extraido: { alimento: "ovo", quantidade: 2, unidade: "unidade", refeicao: "almoco" },
       match: { kind: "exact", food: OVO },
       gramas: 100,
+      macros: { kcal: 100, proteinaG: 10, carboG: 10, gorduraG: 1 },
       precisaPeso: false,
     },
   ],
@@ -103,7 +112,9 @@ function bodyOf(call: unknown[]): unknown {
   return JSON.parse((call[1] as RequestInit).body as string);
 }
 
-const confirmar = () => screen.getByRole("button", { name: "Confirmar" });
+/** Botão principal: "SALVAR", ou o motivo de não poder ("RESOLVA O ITEM 01"). */
+const confirmar = () =>
+  screen.getByRole("button", { name: /^(SALVAR|RESOLVA O ITEM \d\d|NADA PARA SALVAR)$/ });
 
 describe("RevisaoScreen", () => {
   beforeEach(() => {
@@ -113,7 +124,9 @@ describe("RevisaoScreen", () => {
   it("mostra a transcrição no topo", async () => {
     mockFetch();
     await renderRevisao(REVIEW);
-    expect(screen.getByText("duzentos gramas de arroz")).toBeOnTheScreen();
+    expect(screen.getByText("“duzentos gramas de arroz”")).toBeOnTheScreen();
+    expect(screen.getByText("VOCÊ DISSE")).toBeOnTheScreen();
+    expect(screen.getByRole("header", { name: "CONFERE?" })).toBeOnTheScreen();
   });
 
   it("sem revisão em memória avisa que não há nada", async () => {
@@ -121,15 +134,16 @@ describe("RevisaoScreen", () => {
     expect(screen.getByText("Nada para revisar.")).toBeOnTheScreen();
   });
 
-  it("item sem casamento (none) oferece Cadastrar e bloqueia Confirmar", async () => {
+  it("item sem casamento (none) fica pendente com BUSCAR | CADASTRAR | TIRAR e bloqueia salvar", async () => {
     const fetchMock = mockFetch();
     await renderRevisao(REVIEW);
 
-    expect(screen.getByRole("button", { name: "Cadastrar" })).toBeOnTheScreen();
-    expect(screen.getByRole("button", { name: "Buscar" })).toBeOnTheScreen();
-    expect(
-      screen.getByText("Item 1 (arroz): escolha, busque ou cadastre o alimento."),
-    ).toBeOnTheScreen();
+    expect(screen.getByText("“arroz”?")).toBeOnTheScreen();
+    expect(screen.getByText("não achei na base")).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "CADASTRAR" })).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "BUSCAR" })).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "TIRAR" })).toBeOnTheScreen();
+    expect(confirmar()).toHaveTextContent("RESOLVA O ITEM 01");
     expect(confirmar()).toBeDisabled();
 
     await userEvent.setup().press(confirmar());
@@ -142,7 +156,7 @@ describe("RevisaoScreen", () => {
     await renderRevisao(REVIEW);
     const user = userEvent.setup();
 
-    await user.press(screen.getByRole("button", { name: "Cadastrar" }));
+    await user.press(screen.getByRole("button", { name: "CADASTRAR" }));
     await user.clear(screen.getByLabelText("Nome do alimento"));
     await user.type(screen.getByLabelText("Nome do alimento"), "Arroz da casa");
     await user.type(screen.getByLabelText("Kcal por 100 g"), "130");
@@ -151,7 +165,7 @@ describe("RevisaoScreen", () => {
     await user.type(screen.getByLabelText("Gordura (g) por 100 g"), "0");
     await user.press(screen.getByRole("button", { name: "Salvar alimento" }));
 
-    expect(await screen.findByText("Alimento: Arroz da casa")).toBeOnTheScreen();
+    expect(await screen.findByText("Arroz da casa")).toBeOnTheScreen();
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(url).toBe("http://localhost:3000/foods");
     expect(init.method).toBe("POST");
@@ -164,6 +178,7 @@ describe("RevisaoScreen", () => {
       gordura100g: 0,
       fonte: "cadastro da pessoa",
     });
+    expect(confirmar()).toHaveTextContent("SALVAR");
     expect(confirmar()).toBeEnabled();
   });
 
@@ -172,7 +187,7 @@ describe("RevisaoScreen", () => {
     await renderRevisao(REVIEW);
     const user = userEvent.setup();
 
-    await user.press(screen.getByRole("button", { name: "Cadastrar" }));
+    await user.press(screen.getByRole("button", { name: "CADASTRAR" }));
     await user.press(screen.getByRole("button", { name: "Salvar alimento" }));
 
     expect(await screen.findByText("Kcal por 100 g deve ser um número")).toBeOnTheScreen();
@@ -184,11 +199,12 @@ describe("RevisaoScreen", () => {
     await renderRevisao(REVIEW);
     const user = userEvent.setup();
 
-    await user.press(screen.getByRole("button", { name: "Buscar" }));
+    await user.press(screen.getByRole("button", { name: "BUSCAR" }));
     await user.press(screen.getByRole("button", { name: "Procurar" }));
     await user.press(await screen.findByRole("button", { name: "Arroz teste" }));
 
-    expect(screen.getByText("Alimento: Arroz teste")).toBeOnTheScreen();
+    expect(screen.getByText("Arroz teste")).toBeOnTheScreen();
+    expect(screen.queryByText("não achei na base")).toBeNull();
     expect(fetchMock.mock.calls[0]?.[0]).toBe("http://localhost:3000/foods?q=arroz");
   });
 
@@ -208,15 +224,18 @@ describe("RevisaoScreen", () => {
     });
     const user = userEvent.setup();
 
-    expect(screen.getByText("Qual destes?")).toBeOnTheScreen();
+    expect(screen.getByText("qual destes?")).toBeOnTheScreen();
     expect(confirmar()).toBeDisabled();
 
     await user.press(screen.getByRole("button", { name: "Frango B" }));
-    expect(screen.getByText("Alimento: Frango B")).toBeOnTheScreen();
+    expect(screen.getByText("Frango B")).toBeOnTheScreen();
+    expect(screen.queryByRole("button", { name: "Frango A" })).toBeNull();
     expect(confirmar()).toBeEnabled();
 
+    // "trocar" mostra os candidatos de novo.
+    await user.press(screen.getByRole("button", { name: "trocar" }));
     await user.press(screen.getByRole("button", { name: "Frango A" }));
-    expect(screen.getByText("Alimento: Frango A")).toBeOnTheScreen();
+    expect(screen.getByText("Frango A")).toBeOnTheScreen();
   });
 
   it("precisaPeso bloqueia Confirmar com mensagem até digitar as gramas", async () => {
@@ -235,14 +254,16 @@ describe("RevisaoScreen", () => {
     });
     const user = userEvent.setup();
 
-    expect(screen.getByText("Item 1 (whey): informe o peso em gramas.")).toBeOnTheScreen();
-    expect(
-      screen.getByText('Whey teste não tem porção padrão para "scoop": informe o peso em gramas.'),
-    ).toBeOnTheScreen();
+    expect(screen.getByText("“whey”?")).toBeOnTheScreen();
+    expect(screen.getByText("diga o peso em gramas")).toBeOnTheScreen();
+    expect(screen.getByText('Whey teste: sem porção para "scoop"')).toBeOnTheScreen();
+    expect(confirmar()).toHaveTextContent("RESOLVA O ITEM 01");
     expect(confirmar()).toBeDisabled();
 
     await user.type(screen.getByLabelText("Peso em gramas — item 1"), "30");
-    expect(screen.queryByText("Item 1 (whey): informe o peso em gramas.")).toBeNull();
+    expect(screen.queryByText("diga o peso em gramas")).toBeNull();
+    expect(screen.getByText("30 kcal")).toBeOnTheScreen();
+    expect(confirmar()).toHaveTextContent("SALVAR");
     expect(confirmar()).toBeEnabled();
 
     await user.press(confirmar());
@@ -296,8 +317,8 @@ describe("RevisaoScreen", () => {
     await renderRevisao(DOIS_ITENS);
     const user = userEvent.setup();
 
-    await user.press(screen.getByRole("button", { name: "Jantar" }));
-    const removers = screen.getAllByRole("button", { name: "Remover" });
+    await user.press(screen.getByRole("radio", { name: "Jantar" }));
+    const removers = screen.getAllByRole("button", { name: "tirar" });
     const removerOvo = removers[1];
     if (!removerOvo) throw new Error("sem botão Remover do item 2");
     await user.press(removerOvo);
@@ -337,6 +358,7 @@ describe("RevisaoScreen", () => {
 
     expect(await screen.findByText("Quantidade inválida")).toBeOnTheScreen();
     expect(screen.getByText("Salvo")).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "SAIR SEM SALVAR O RESTO" })).toBeOnTheScreen();
     expect(
       screen.getByText("Alguns itens não foram salvos. Corrija e confirme de novo."),
     ).toBeOnTheScreen();
@@ -355,7 +377,7 @@ describe("RevisaoScreen", () => {
     const fetchMock = mockFetch().mockResolvedValueOnce(jsonResponse(204));
     await renderRevisao(DOIS_ITENS);
 
-    await userEvent.setup().press(screen.getByRole("button", { name: "Descartar" }));
+    await userEvent.setup().press(screen.getByRole("button", { name: "DESCARTAR" }));
 
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/"));
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
@@ -370,9 +392,109 @@ describe("RevisaoScreen", () => {
     );
     await renderRevisao(DOIS_ITENS);
 
-    await userEvent.setup().press(screen.getByRole("button", { name: "Descartar" }));
+    await userEvent.setup().press(screen.getByRole("button", { name: "DESCARTAR" }));
 
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/"));
     expect(screen.queryByText("Registro de voz não encontrado")).toBeNull();
+  });
+  it("mostra o kcal de cada item (da API) e o total", async () => {
+    mockFetch();
+    await renderRevisao(DOIS_ITENS);
+
+    expect(screen.getByText("200 kcal")).toBeOnTheScreen();
+    expect(screen.getByText("100 kcal")).toBeOnTheScreen();
+    expect(screen.getByText("1 un = 50 g")).toBeOnTheScreen();
+    expect(screen.getByText("TOTAL · 2 DE 2 ITENS")).toBeOnTheScreen();
+    expect(screen.getByText("300 KCAL")).toBeOnTheScreen();
+  });
+
+  it("editar a quantidade recalcula o kcal com macrosForGrams do nutrition-core", async () => {
+    mockFetch();
+    // Valor por 100 g inventado, escolhido para o resultado ter casas decimais.
+    const FEIJAO = food("f-feijao", "Feijão teste", null, 137);
+    await renderRevisao({
+      voiceLogId: "vl4",
+      transcricao: "cem gramas de feijão",
+      origem: "voz",
+      itens: [
+        {
+          extraido: { alimento: "feijão", quantidade: 100, unidade: "g", refeicao: "almoco" },
+          match: { kind: "exact", food: FEIJAO },
+          gramas: 100,
+          macros: { kcal: 137, proteinaG: 10, carboG: 10, gorduraG: 1 },
+          precisaPeso: false,
+        },
+      ],
+    });
+    const user = userEvent.setup();
+    expect(screen.getByText("137 kcal")).toBeOnTheScreen();
+
+    await user.clear(screen.getByLabelText("Quantidade — item 1"));
+    await user.type(screen.getByLabelText("Quantidade — item 1"), "150,5");
+
+    const esperado = formatMacros(
+      macrosForGrams({ kcal: 137, proteinaG: 10, carboG: 10, gorduraG: 1 }, 150.5),
+    ).kcal;
+    expect(esperado).toBe(206);
+    expect(screen.getByText(`${esperado} kcal`)).toBeOnTheScreen();
+    expect(screen.getByText(`${esperado} KCAL`)).toBeOnTheScreen();
+  });
+
+  it("trocar a unidade recalcula pela porção do alimento", async () => {
+    mockFetch();
+    await renderRevisao(DOIS_ITENS);
+
+    await userEvent.setup().press(screen.getByRole("radio", { name: "g" }));
+
+    // Ovo: "2" agora é 2 g (não 2 unidades de 50 g).
+    expect(screen.getByText("2 kcal")).toBeOnTheScreen();
+    expect(screen.getByText("202 KCAL")).toBeOnTheScreen();
+  });
+
+  it("com pendência o botão diz qual item resolver e o total conta só os itens conhecidos", async () => {
+    mockFetch();
+    const [arroz] = DOIS_ITENS.itens;
+    if (!arroz) throw new Error("sem item");
+    await renderRevisao({
+      ...DOIS_ITENS,
+      itens: [
+        arroz,
+        {
+          extraido: { alimento: "farofa", quantidade: 2, unidade: "colher" },
+          match: { kind: "none" },
+          precisaPeso: false,
+        },
+      ],
+    });
+
+    expect(confirmar()).toHaveTextContent("RESOLVA O ITEM 02");
+    expect(confirmar()).toBeDisabled();
+    expect(screen.getByText("“farofa”?")).toBeOnTheScreen();
+    expect(screen.getByText("TOTAL · 1 DE 2 ITENS")).toBeOnTheScreen();
+    expect(screen.getByText("200 KCAL")).toBeOnTheScreen();
+
+    // Tirar o item pendente libera o salvar.
+    await userEvent.setup().press(screen.getByRole("button", { name: "TIRAR" }));
+    expect(confirmar()).toHaveTextContent("SALVAR");
+    expect(screen.getByText("TOTAL · 1 DE 1 ITEM")).toBeOnTheScreen();
+  });
+
+  it("total com milhar usa ponto", async () => {
+    mockFetch();
+    await renderRevisao({
+      ...DOIS_ITENS,
+      itens: [
+        {
+          extraido: { alimento: "arroz", quantidade: 1200, unidade: "g", refeicao: "almoco" },
+          match: { kind: "exact", food: ARROZ },
+          gramas: 1200,
+          macros: { kcal: 1200, proteinaG: 120, carboG: 120, gorduraG: 12 },
+          precisaPeso: false,
+        },
+      ],
+    });
+
+    expect(screen.getByText("1.200 kcal")).toBeOnTheScreen();
+    expect(screen.getByText("1.200 KCAL")).toBeOnTheScreen();
   });
 });
