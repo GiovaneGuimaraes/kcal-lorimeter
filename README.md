@@ -26,6 +26,9 @@ pnpm build            # tsc nos packages de back-end; checagem de tipos no mobil
 pnpm dev:api          # sobe a API em http://localhost:3000 (GET /health → {"ok":true})
 ```
 
+A API exige `JWT_SECRET` (32+ caracteres) no `.env`. Endpoints (`/auth/register`, `/auth/login`,
+`/me`) e exemplos de `curl`: [`packages/rest-api/README.md`](packages/rest-api/README.md).
+
 App mobile (Expo): `pnpm --filter @kcal/mobile start` e abra no Expo Go ou num development build.
 
 ## Estrutura
@@ -33,6 +36,7 @@ App mobile (Expo): `pnpm --filter @kcal/mobile start` e abra no Expo Go ou num d
 ```
 packages/
   shared/     @kcal/shared    — tipos e schemas Zod compartilhados
+  auth-core/  @kcal/auth-core — senha (scrypt), cadastro, login e sessão (JWT)
   rest-api/   @kcal/rest-api  — API HTTP (Hono + @hono/node-server)
   mobile/     @kcal/mobile    — app Expo (Expo Router)
 ```
