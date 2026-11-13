@@ -304,7 +304,7 @@ describe("RevisaoScreen", () => {
     });
   });
 
-  it("revisão por texto envia origem texto, sem voiceLogId", async () => {
+  it("revisão por texto envia origem texto com o voiceLogId", async () => {
     const fetchMock = mockFetch().mockResolvedValue(jsonResponse(201, entry(ARROZ.id)));
     await renderRevisao({ ...DOIS_ITENS, origem: "texto", itens: DOIS_ITENS.itens.slice(0, 1) });
 
@@ -313,7 +313,7 @@ describe("RevisaoScreen", () => {
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/"));
     const body = bodyOf(fetchMock.mock.calls[0]) as Record<string, unknown>;
     expect(body.origem).toBe("texto");
-    expect(body).not.toHaveProperty("voiceLogId");
+    expect(body.voiceLogId).toBe("vl1");
   });
 
   it("400 num item mostra o erro nele, marca o outro como salvo e não navega", async () => {

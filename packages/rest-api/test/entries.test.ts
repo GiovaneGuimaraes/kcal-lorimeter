@@ -175,6 +175,29 @@ describe("/entries", () => {
     expect((await send("POST", "/entries", lancamento({ voiceLogId: meu }))).status).toBe(400);
   });
 
+  it("origem texto + voiceLogId → 201, voice_log confirmado; repetir → 201; discard → 404", async () => {
+    const id = t.handle.db
+      .insert(voiceLogs)
+      .values({ userId: ana.id, transcricao: "frase inventada de teste" })
+      .returning({ id: voiceLogs.id })
+      .get().id;
+    const status = () =>
+      t.handle.db.select({ s: voiceLogs.status }).from(voiceLogs).where(eq(voiceLogs.id, id)).get()
+        ?.s;
+
+    const corpo = lancamento({ origem: "texto", voiceLogId: id });
+    expect((await send("POST", "/entries", corpo)).status).toBe(201);
+    expect(status()).toBe("confirmado");
+    expect((await send("POST", "/entries", corpo)).status).toBe(201);
+    expect(status()).toBe("confirmado");
+
+    const descarte = await t.app.request(`/voice/${id}/discard`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${ana.token}` },
+    });
+    expect(descarte.status).toBe(404);
+  });
+
   it.each([
     ["refeição inválida", { refeicao: "ceia" }],
     ["data inexistente", { data: "2026-02-30" }],
