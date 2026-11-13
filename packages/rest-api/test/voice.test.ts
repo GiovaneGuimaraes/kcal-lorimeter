@@ -89,6 +89,11 @@ describe("/voice", () => {
       expect(review.transcricao).toBe("200 g de arroz, 100 g de frango empanado e 1 xyz");
       expect(review.itens.map((i) => i.match.kind)).toEqual(["exact", "candidates", "none"]);
       expect(review.itens[0]?.gramas).toBe(200);
+      const [arroz, frango, xyz] = review.itens;
+      if (arroz?.match.kind !== "exact") throw new Error("arroz deveria casar exact");
+      expect(arroz.macros?.kcal).toBe(2 * arroz.match.food.kcal100g);
+      expect(frango).not.toHaveProperty("macros");
+      expect(xyz).not.toHaveProperty("macros");
 
       const [log] = logs();
       expect(log).toMatchObject({
