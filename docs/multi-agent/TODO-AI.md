@@ -14,21 +14,6 @@
 Origem desta onda: [`docs/HANDOFF-DESIGN-D.md`](../HANDOFF-DESIGN-D.md) (correções da review +
 visual D "Cartaz"). Os briefs abaixo referenciam as seções do handoff em vez de repeti-las.
 
-### T-020 — Macros por item na revisão de voz (calculados no servidor)
-- **Status**: EM_ANDAMENTO · **Complexidade**: alta · **Depende de**: —
-- **Objetivo**: handoff § 2.6 linha 1. `VoiceReviewItemSchema` ganha `macros?: Macros`;
-  `packages/voice-core/src/reviewItem.ts` preenche com `macrosForGrams(food, gramas)` do
-  `nutrition-core` quando `match.kind === "exact"` e há `gramas`. Sem `exact` ou sem gramas →
-  ausente. Nada muda no LLM.
-- **Propósito**: a revisão mostra "256 kcal" por item e o total, sempre pelo `nutrition-core`.
-- **Fora de escopo**: UI (T-024), recálculo no app ao editar quantidade (T-024 usa a mesma
-  função pura).
-- **Critério de aceite**: `pnpm --filter @kcal/voice-core test`, `@kcal/shared test` e
-  `@kcal/rest-api test` verdes: "200 g de arroz" → `macros.kcal = 2 × kcal100g`; item `none` →
-  sem `macros`; item com `precisaPeso` → sem `macros`; o contrato antigo (sem `macros`) continua
-  válido no schema.
-- **Verificação**: 1.
-
 ### T-021 — Visual D: tokens, fontes, logo e componentes base
 - **Status**: EM_ANDAMENTO · **Complexidade**: alta · **Depende de**: T-018
 - **Objetivo**: handoff § 2.1, 2.2, 2.3, 2.5. `ui/theme.ts`; fontes Archivo + IBM Plex Mono via

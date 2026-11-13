@@ -24,6 +24,7 @@ aqui o que **muda uma decisão futura** de roteamento; o resto vai no corpo da P
 | T-017 voice_log confirmado | média | Sonnet 5.5 | 1 | 0 |
 | T-019 log 500 | média | Sonnet 5.5 | 1 | 0 |
 | T-018 correções app | média | Sonnet 5.5 | 1 | 0 |
+| T-020 macros na revisão | alta | Opus 5.5 | 1 | 0 |
 
 ## Onde as reprovações caem
 
