@@ -28,10 +28,11 @@ aqui o que **muda uma decisão futura** de roteamento; o resto vai no corpo da P
 | T-021 tema D | alta | Opus 5.5 | 1 | 0 — sem prints (sem web) |
 | T-022 telas simples D | alta | Opus 5.5 | 1 | 0 |
 | T-024 revisão D | alta | Opus 5.5 | 1 | 0 |
+| T-023 painel D | alta | Opus 5.5 | 1 | 0 |
 
 ## Onde as reprovações caem
 
-> **Dado real (2026-11-12, 15 tarefas, 15 ciclos, 0 reprovações).** Nenhuma reprovação; o custo foi
+> **Dado real (2026-11-13, 22 tarefas, 22 ciclos, 0 reprovações).** Nenhuma reprovação; o custo foi
 > conflito trivial de merge entre executores paralelos e dois achados de contrato entre packages
 > (T-013 → T-017), que o revisor de uma tarefa isolada não vê. Hipótese original abaixo ainda não
 > testada: as telas de gravação/revisão só foram verificadas com mocks (nível 4 pendente, H-010).

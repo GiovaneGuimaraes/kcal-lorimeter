@@ -7,7 +7,8 @@ trabalho é feito: [`docs/multi-agent/README.md`](docs/multi-agent/README.md).
 
 ## Estado
 
-**Primeira versão do MVP integrada (T-001 a T-014, T-017).** Monorepo pnpm (Node 22+, pnpm 10), comandos na raiz:
+**MVP + visual D "Cartaz" integrados (T-001 a T-024).** Tokens e componentes em
+`packages/mobile/src/ui/{theme,components,choice,logo}.tsx`; telas só compõem (nada de cor solta). Monorepo pnpm (Node 22+, pnpm 10), comandos na raiz:
 
 | Comando | O que faz |
 |---|---|

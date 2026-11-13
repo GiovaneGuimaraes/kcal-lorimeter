@@ -272,7 +272,8 @@ De cima para baixo:
    - Atenção: o desenho mostra "1 scoop"/"1 unidade" nas linhas, mas `EntryDto` só guarda `gramas`.
      **Mostrar gramas** ("30 g", "50 g"). Guardar quantidade+unidade originais é um item de backlog,
      não desta tarefa.
-6. **Barra fixa de baixo** (borda superior 3, altura 84): botão grande preto **"SEGURE E FALE"**
+6. **Barra fixa de baixo** (borda superior 3, altura 84): botão grande preto **"TOQUE E FALE"**
+   (implementado como tocar para começar / tocar para parar, H-012; o desenho dizia "SEGURE E FALE")
    com ícone de microfone, texto amarelo; à direita, quadrado 84 com ícone de lápis (abre a digitação).
    - Enquanto grava: o botão vira `danger` com o cronômetro "0:12 / 1:00" (o `MAX_RECORDING_MS`
      atual é 60 s) e o texto "SOLTE PARA ENVIAR".
