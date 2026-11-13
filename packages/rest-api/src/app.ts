@@ -6,6 +6,7 @@ import { entriesRoutes } from "./routes/entries";
 import { goalsRoutes } from "./routes/goals";
 import { foodsRoutes } from "./routes/foods";
 import { meRoutes } from "./routes/me";
+import { voiceRoutes } from "./routes/voice";
 import type { AppDeps } from "./types";
 
 /**
@@ -26,6 +27,7 @@ export function createApp(deps: AppDeps): Hono {
   app.route("/foods", foodsRoutes(deps));
   app.route("/entries", entriesRoutes(deps));
   app.route("/days", daysRoutes(deps));
+  app.route("/voice", voiceRoutes(deps));
 
   app.notFound((c) => c.json<ErrorResponse>({ erro: "Rota não encontrada" }, 404));
 

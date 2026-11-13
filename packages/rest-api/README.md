@@ -12,6 +12,8 @@ ambiente têm precedência.
 | `JWT_SECRET` | — | Obrigatória, **mínimo 32 caracteres**. Sem ela a API não sobe. |
 | `DB_PATH` | `data/kcal.sqlite` | Caminho relativo é resolvido a partir da raiz do repo; a pasta é criada se faltar. |
 | `PORT` | `3000` | |
+| `OPENAI_API_KEY` | — | Opcional. Transcrição (STT). Sem ela, `POST /voice` responde 503. |
+| `ANTHROPIC_API_KEY` | — | Opcional. Extração (LLM). Sem ela, `POST /voice` e `POST /voice/text` respondem 503. |
 
 Gerar um segredo: `node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"`.
 
@@ -30,6 +32,12 @@ credenciais inválidas), 404, 409 (e-mail já cadastrado), 500 (sem detalhes int
 | `POST /auth/register` | `{ email, nome (1–80), senha (mín. 8) }` | `201 { token, user: { id, email, nome } }` |
 | `POST /auth/login` | `{ email, senha }` | `200 { token, user: { id, email, nome } }` |
 | `GET /me` | — (header `Authorization: Bearer <token>`) | `200 { id, email, nome }` |
+| `POST /voice` | multipart, campo `audio` (`audio/*`, ≤ 5 MB) | `200 VoiceReview`; 400 (não é áudio), 413 (grande), 422 (não entendeu), 502 (STT/LLM falhou), 503 (sem chave) |
+| `POST /voice/text` | `{ texto (1–500) }` | `200 VoiceReview`; 422, 502, 503 como acima |
+| `POST /voice/:id/discard` | — | `204`; 404 se não for da pessoa ou não estiver pendente |
+
+O áudio só passa pela memória do servidor (vai para o STT e é descartado): não é gravado em disco
+nem no banco.
 
 O token é um JWT HS256 com validade de 30 dias (sem refresh: expirou, faz login de novo).
 
