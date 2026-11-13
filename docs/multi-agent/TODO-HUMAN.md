@@ -84,7 +84,9 @@
 - **Resposta do humano (2026-11-12)**: pediu que o fluxo agêntico construísse a primeira versão.
   Aplicado como: o orquestrador integra as branches aprovadas pelo revisor na branch de trabalho
   `GiovaneGuimaraes/kcal-lorimeter`; a PR dessa branch para a `main` é mergeada **pelo humano**.
-  Quando a `main` tiver CI com proteção, reavaliar modo auto (opção b/c).
+  **Atualização (2026-11-13)**: o humano autorizou o merge da PR #2 na `main` "se o CI ficar
+  verde". Vale como opção (b): revisor `APROVADA` + CI verde → o orquestrador abre a PR e
+  mergeia; o humano revisa depois. Proteção de branch na `main` ainda não está configurada.
 
 ### [2026-11-08] H-005 — De onde vêm os macros dos alimentos padrão?
 - **Resposta do humano (2026-11-12)**: ok — **TACO** para in natura/preparados; industrializado
