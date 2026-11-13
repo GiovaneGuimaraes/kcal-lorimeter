@@ -28,6 +28,18 @@ export function parseNumber(texto: string): number {
   return limpo === "" ? Number.NaN : Number(limpo);
 }
 
+/**
+ * Iniciais do nome para o botão da conta (até 2 letras, maiúsculas): primeira e última palavra.
+ * "Pessoa Teste" → "PT", "Ana" → "A", vazio → "?".
+ */
+export function initials(nome: string): string {
+  const palavras = nome.trim().split(/\s+/).filter(Boolean);
+  const primeira = palavras[0];
+  if (!primeira) return "?";
+  const ultima = palavras.length > 1 ? palavras[palavras.length - 1] : undefined;
+  return `${primeira.charAt(0)}${ultima ? ultima.charAt(0) : ""}`.toUpperCase();
+}
+
 /** Nome de cada refeição na tela. */
 export const MEAL_LABELS = {
   cafe: "Café da manhã",

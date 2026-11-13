@@ -1,4 +1,4 @@
-import { formatGrams, formatKcal, parseNumber } from "../src/ui/format";
+import { formatGrams, formatKcal, initials, parseNumber } from "../src/ui/format";
 
 describe("formatação", () => {
   it("kcal inteiro e gramas com 1 casa (half-up, vírgula)", () => {
@@ -17,6 +17,14 @@ describe("formatação", () => {
     expect(formatKcal(999.5)).toBe("1.000");
     expect(formatKcal(1234567)).toBe("1.234.567");
     expect(formatKcal(-1215)).toBe("-1.215");
+  });
+
+  it("initials: até 2 letras (primeira e última palavra), maiúsculas", () => {
+    expect(initials("Pessoa Teste")).toBe("PT");
+    expect(initials("ana maria de souza")).toBe("AS");
+    expect(initials("  Ana  ")).toBe("A");
+    expect(initials("élio")).toBe("É");
+    expect(initials("   ")).toBe("?");
   });
 
   it("parseNumber aceita vírgula e trata vazio como NaN", () => {

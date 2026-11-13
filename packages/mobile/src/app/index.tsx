@@ -4,20 +4,26 @@ import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Linking,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Svg, { Path, Rect } from "react-native-svg";
 import { errorMessage } from "../api/client";
 import { sendVoiceAudio, sendVoiceText } from "../api/voice";
 import { useSession } from "../auth/session";
 import { DayPanel } from "../day/day-panel";
-import { Button, colors, ErrorMessage, Field } from "../ui/components";
+import { Button, ErrorMessage, Field } from "../ui/components";
+import { initials } from "../ui/format";
+import { Logo } from "../ui/logo";
+import { textStyles, theme } from "../ui/theme";
 import { useReview } from "../voice/review-store";
 import {
   formatDuration,
@@ -26,7 +32,12 @@ import {
   useVoiceRecorder,
 } from "../voice/use-voice-recorder";
 
-/** Tela inicial: gravar/digitar o que comeu (ação principal) e, abaixo, o painel do dia. */
+const c = theme.color;
+
+/**
+ * Tela principal (visual D § 2.4.3): cabeçalho com a conta, painel do dia e, fixa embaixo, a barra
+ * "TOQUE E FALE" (tocar para começar, tocar de novo para parar e enviar) com o lápis para digitar.
+ */
 export default function HomeScreen() {
   const { user, signOut } = useSession();
   const { setReview } = useReview();
@@ -34,6 +45,7 @@ export default function HomeScreen() {
   const [erroTexto, setErroTexto] = useState<string | undefined>();
   const [erro, setErro] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  const [digitando, setDigitando] = useState(false);
 
   async function enviar(chamada: () => Promise<VoiceReview>) {
     setErro(null);
@@ -64,44 +76,57 @@ export default function HomeScreen() {
       return;
     }
     setErroTexto(undefined);
-    if (await enviar(() => sendVoiceText(parsed.data.texto))) setTexto("");
+    if (await enviar(() => sendVoiceText(parsed.data.texto))) {
+      setTexto("");
+      setDigitando(false);
+    }
   }
+
+  function abrirConta() {
+    // "Sair" zera a sessão; o `ReviewProvider` descarta a revisão pendente ao virar `signedOut` (F-2).
+    Alert.alert(user?.nome ?? "Conta", user?.email, [
+      { text: "Cancelar", style: "cancel" },
+      { text: "Sair", style: "destructive", onPress: () => void signOut() },
+    ]);
+  }
+
+  const nome = user?.nome ?? "";
+  const permissaoNegada = gravador.permission === "denied";
+  const temAviso = permissaoNegada || !!gravador.error || !!erro;
 
   return (
     <SafeAreaView style={styles.safe}>
+      <View style={styles.header}>
+        <Logo size={32} />
+        <Text style={styles.brand} numberOfLines={1}>
+          kcal-lorimeter
+        </Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Conta de ${nome}`}
+          accessibilityHint="Abre o menu da conta, com a opção de sair"
+          accessibilityState={{ disabled: ocupado }}
+          disabled={ocupado}
+          onPress={abrirConta}
+          style={({ pressed }) => [styles.account, pressed && styles.accountPressed]}
+        >
+          <Text style={styles.accountText}>{initials(nome)}</Text>
+        </Pressable>
+      </View>
+
       <KeyboardAvoidingView
-        style={styles.safe}
+        style={styles.flex}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-          <View style={styles.header}>
-            <Text accessibilityRole="header" style={styles.title}>
-              {user ? `Olá, ${user.nome}` : "kcal-lorimeter"}
-            </Text>
-            <Button title="Sair" variant="secondary" disabled={ocupado} onPress={signOut} />
-          </View>
+        <ScrollView style={styles.flex} keyboardShouldPersistTaps="handled">
+          <DayPanel />
+        </ScrollView>
 
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>O que você comeu?</Text>
-            <Text style={styles.hint}>Ex.: "duzentos gramas de arroz e um ovo"</Text>
-            {gravando ? (
-              <Text accessibilityLabel="Tempo de gravação" style={styles.timer}>
-                {formatDuration(gravador.elapsedMs)} / {formatDuration(MAX_RECORDING_MS)}
-              </Text>
-            ) : null}
-            {gravando ? (
-              <Button title="Parar e enviar" variant="danger" onPress={gravador.stop} />
-            ) : (
-              <Button
-                title="Gravar"
-                onPress={gravador.start}
-                disabled={enviando}
-                busy={gravador.phase !== "idle"}
-              />
-            )}
-            {gravador.permission === "denied" ? (
-              <View style={styles.permission}>
-                <Text style={styles.permissionText}>{MIC_DENIED_MESSAGE}</Text>
+        {temAviso ? (
+          <View style={styles.notice}>
+            {permissaoNegada ? (
+              <>
+                <Text style={styles.noticeText}>{MIC_DENIED_MESSAGE}</Text>
                 {gravador.canAskAgain ? null : (
                   <Button
                     title="Abrir configurações"
@@ -109,50 +134,195 @@ export default function HomeScreen() {
                     onPress={() => void Linking.openSettings()}
                   />
                 )}
-              </View>
+              </>
             ) : null}
             <ErrorMessage>{gravador.error}</ErrorMessage>
+            <ErrorMessage>{erro}</ErrorMessage>
           </View>
+        ) : null}
 
-          <View style={styles.card}>
+        {digitando ? (
+          <View style={styles.typing}>
             <Field
-              label="Ou digite"
+              label="O que você comeu?"
               value={texto}
               onChangeText={setTexto}
               error={erroTexto}
               placeholder="200 g de arroz e 1 ovo"
               multiline
               editable={!enviando}
+              style={styles.typingInput}
             />
-            <Button title="Enviar texto" onPress={enviarTexto} disabled={ocupado || gravando} />
+            <Button
+              title="Enviar"
+              onPress={enviarTexto}
+              busy={enviando}
+              disabled={ocupado || gravando}
+            />
           </View>
+        ) : null}
 
-          {enviando ? (
-            <View style={styles.sending}>
-              <ActivityIndicator color={colors.primary} />
-              <Text style={styles.hint}>Enviando…</Text>
-            </View>
-          ) : null}
-          <ErrorMessage>{erro}</ErrorMessage>
-
-          <DayPanel />
-        </ScrollView>
+        <View style={styles.bar}>
+          <VoiceButton
+            gravando={gravando}
+            enviando={enviando}
+            busy={gravador.phase === "starting" || gravador.phase === "stopping"}
+            elapsedMs={gravador.elapsedMs}
+            onPress={gravando ? gravador.stop : gravador.start}
+          />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={digitando ? "Fechar digitação" : "Digitar o que comeu"}
+            accessibilityState={{ expanded: digitando, disabled: gravando }}
+            disabled={gravando}
+            onPress={() => setDigitando((d) => !d)}
+            style={({ pressed }) => [styles.pencil, (pressed || digitando) && styles.pencilActive]}
+          >
+            <PencilIcon color={gravando ? c.hairline : c.ink} />
+          </Pressable>
+        </View>
       </KeyboardAvoidingView>
-      <StatusBar style="auto" />
+      <StatusBar style="dark" />
     </SafeAreaView>
   );
 }
 
+/**
+ * Botão grande da barra: "TOQUE E FALE" (preto, texto amarelo). Gravando vira `danger` com o
+ * relógio "0:12 / 1:00" e "TOQUE PARA ENVIAR". Tocar de novo para e envia (H-012: tocar e tocar).
+ */
+function VoiceButton(props: {
+  gravando: boolean;
+  enviando: boolean;
+  busy: boolean;
+  elapsedMs: number;
+  onPress(): void;
+}) {
+  const { gravando, enviando, busy } = props;
+  const off = !gravando && (enviando || busy);
+  const rotulo = gravando ? "Toque para enviar" : enviando ? "Enviando…" : "Toque e fale";
+  const cor = gravando ? c.onInk : c.accent;
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={rotulo}
+      accessibilityState={{ disabled: off, busy: enviando || busy }}
+      disabled={off}
+      onPress={props.onPress}
+      style={({ pressed }) => [
+        styles.voice,
+        gravando && styles.voiceRecording,
+        pressed && !off && styles.voicePressed,
+      ]}
+    >
+      {off ? <ActivityIndicator color={c.accent} /> : <MicIcon color={cor} />}
+      <View style={styles.voiceTexts}>
+        {gravando ? (
+          <Text accessibilityLabel="Tempo de gravação" style={[styles.voiceTimer, { color: cor }]}>
+            {`${formatDuration(props.elapsedMs)} / ${formatDuration(MAX_RECORDING_MS)}`}
+          </Text>
+        ) : null}
+        <Text
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.7}
+          style={[styles.voiceText, { color: cor }]}
+        >
+          {rotulo}
+        </Text>
+      </View>
+    </Pressable>
+  );
+}
+
+function MicIcon({ color }: { color: string }) {
+  return (
+    <Svg width={26} height={26} viewBox="0 0 24 24" accessibilityElementsHidden>
+      <Rect x={8} y={2} width={8} height={13} rx={4} fill={color} />
+      <Path d="M5 11a7 7 0 0 0 14 0M12 18v4M8 22h8" stroke={color} strokeWidth={2.4} fill="none" />
+    </Svg>
+  );
+}
+
+function PencilIcon({ color }: { color: string }) {
+  return (
+    <Svg width={30} height={30} viewBox="0 0 24 24" accessibilityElementsHidden>
+      <Path d="M4 20l1-5L16 4l4 4L9 19z" stroke={color} strokeWidth={2.4} fill="none" />
+      <Path d="M13.5 6.5l4 4" stroke={color} strokeWidth={2.4} />
+    </Svg>
+  );
+}
+
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
-  container: { padding: 24, gap: 20 },
-  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
-  title: { flex: 1, fontSize: 24, fontWeight: "700", color: colors.text },
-  card: { gap: 12, padding: 16, borderWidth: 1, borderColor: colors.border, borderRadius: 12 },
-  cardTitle: { fontSize: 18, fontWeight: "600", color: colors.text },
-  hint: { fontSize: 14, color: colors.muted },
-  timer: { fontSize: 32, fontWeight: "700", textAlign: "center", color: colors.danger },
-  permission: { gap: 8 },
-  permissionText: { fontSize: 15, color: colors.text },
-  sending: { flexDirection: "row", alignItems: "center", gap: 8, justifyContent: "center" },
+  safe: { flex: 1, backgroundColor: c.paper },
+  flex: { flex: 1 },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingHorizontal: theme.space.page,
+    paddingVertical: 10,
+    borderBottomWidth: theme.border.heavy,
+    borderColor: c.ink,
+  },
+  brand: { ...textStyles.screenTitle, fontSize: 18, lineHeight: 22, flex: 1, color: c.ink },
+  account: {
+    width: theme.touch,
+    height: theme.touch,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: theme.border.heavy,
+    borderColor: c.ink,
+    backgroundColor: c.paper,
+  },
+  accountPressed: { backgroundColor: c.accent },
+  accountText: { fontFamily: theme.font.display, fontSize: 16, color: c.ink },
+  notice: {
+    gap: 8,
+    paddingHorizontal: theme.space.page,
+    paddingVertical: theme.space.row,
+    borderTopWidth: theme.border.heavy,
+    borderColor: c.ink,
+    backgroundColor: c.paper,
+  },
+  noticeText: { ...textStyles.body, color: c.ink },
+  typing: {
+    gap: 12,
+    paddingHorizontal: theme.space.page,
+    paddingVertical: theme.space.row,
+    borderTopWidth: theme.border.heavy,
+    borderColor: c.ink,
+    backgroundColor: c.paper,
+  },
+  typingInput: { height: 84, paddingTop: 10, textAlignVertical: "top" },
+  bar: {
+    flexDirection: "row",
+    height: 84,
+    borderTopWidth: theme.border.heavy,
+    borderColor: c.ink,
+    backgroundColor: c.paper,
+  },
+  voice: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+    paddingHorizontal: 16,
+    backgroundColor: c.ink,
+  },
+  voiceRecording: { backgroundColor: c.danger },
+  voicePressed: { opacity: 0.85 },
+  voiceTexts: { flexShrink: 1, alignItems: "flex-start" },
+  voiceTimer: { fontFamily: theme.font.monoBold, fontSize: 15 },
+  voiceText: { ...textStyles.buttonPrimary, fontSize: 22 },
+  pencil: {
+    width: 84,
+    alignItems: "center",
+    justifyContent: "center",
+    borderLeftWidth: theme.border.heavy,
+    borderColor: c.ink,
+    backgroundColor: c.paper,
+  },
+  pencilActive: { backgroundColor: c.accent },
 });
