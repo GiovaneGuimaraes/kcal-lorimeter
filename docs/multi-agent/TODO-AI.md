@@ -41,19 +41,6 @@
   versionadas no git.
 - **Verificação**: 1.
 
-### T-009 — `stt`: interface `transcribe()` + provedor Whisper
-- **Status**: PENDENTE · **Complexidade**: média · **Depende de**: T-001
-- **Objetivo**: `packages/stt` (`@kcal/stt`): tipo `Transcriber = { transcribe(audio: {bytes:
-  Uint8Array, mimeType: string}) => Promise<{ text: string }> }`; `createOpenAiTranscriber({
-  apiKey, fetch? })` chamando `POST https://api.openai.com/v1/audio/transcriptions` (multipart,
-  `model=whisper-1`, `language=pt`); erros tipados (`SttHttpError`, `SttEmptyTranscriptError`);
-  `fetch` injetado. Nunca toca banco nem grava áudio em disco.
-- **Propósito**: trocar de provedor sem mexer no resto.
-- **Fora de escopo**: upload na API, apagar áudio (quem apaga é o `voice-core`).
-- **Critério de aceite**: `pnpm --filter @kcal/stt test` verde com `fetch` mockado: sucesso,
-  HTTP 401, resposta sem texto.
-- **Verificação**: 1.
-
 ### T-010 — `llm`: extração de itens com Claude Haiku 5.5
 - **Status**: PENDENTE · **Complexidade**: alta · **Depende de**: T-001
 - **Objetivo**: `packages/llm` (`@kcal/llm`): schema Zod `ExtractedItem` em `@kcal/shared`
