@@ -12,6 +12,7 @@ aqui o que **muda uma decisão futura** de roteamento; o resto vai no corpo da P
 | T-004 nutrition-core | alta | Opus 5.5 | 1 | 0 — 2 sugestões (ordem da multiplicação, alias de tipo) |
 | T-003 db | alta | Opus 5.5 | 1 | 0 — 3 sugestões (CHECK refeicao, testes cascade, índice food_id) |
 | T-010 llm | alta | Opus 5.5 | 1 | 0 — 3 sugestões (sentinela de quantidade não dita) |
+| T-002 seed | média | Sonnet 5.5 | 1 | 0 — dados de memória do modelo (H-009) |
 
 ## Onde as reprovações caem
 

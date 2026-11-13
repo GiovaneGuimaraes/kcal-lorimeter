@@ -11,23 +11,6 @@
 
 ## Fila
 
-### T-002 — Seed de alimentos padrão (TACO + rótulo médio)
-- **Status**: EM_ANDAMENTO · **Complexidade**: média · **Depende de**: T-003 (feita)
-- **Objetivo**: em `packages/db`: `src/seed/default-foods.ts` com ~40 alimentos comuns no Brasil
-  (arroz branco cozido, feijão carioca cozido, frango grelhado, ovo cozido, batata cozida,
-  batata-doce, aveia, banana, pão francês, leite integral, whey, pasta de amendoim…) com macros
-  por 100 g, `apelidos`, `porcaoPadraoG`/`nomePorcao` quando fizer sentido (ovo 50 g "unidade",
-  whey 30 g "scoop", pão francês 50 g "unidade"), e **`fonte`** em cada um ("TACO 4ª ed." com o
-  código/nome do item, ou "rótulo médio" para industrializado). `seedDefaultFoods(db)` idempotente
-  (chave natural = `nome` com `user_id` nulo; roda de novo sem duplicar). Script
-  `pnpm --filter @kcal/db db:seed` que abre `DB_PATH` e roda o seed.
-- **Propósito**: o app já conhece o prato do dia a dia sem a pessoa cadastrar nada.
-- **Fora de escopo**: casamento por nome (T-006), alimentos da pessoa, UI.
-- **Critério de aceite**: `pnpm --filter @kcal/db test` verde: seed em `:memory:` insere N ≥ 40
-  itens, todos com `user_id` nulo, `fonte` não vazia e macros ≥ 0; rodar 2× mantém N; kcal
-  informada bate com `4P + 4C + 9G` dentro de ±15 % para cada item (sanidade dos dados).
-- **Verificação**: 1.
-
 ### T-005 — `auth-core` + rotas de cadastro/login + bootstrap da API
 - **Status**: EM_ANDAMENTO · **Complexidade**: alta · **Depende de**: T-003 (feita)
 - **Objetivo**: `packages/auth-core` (`@kcal/auth-core`): `hashPassword`/`verifyPassword`
