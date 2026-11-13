@@ -127,8 +127,9 @@ function erroDeVoz(c: Context, err: unknown) {
     return c.json<ErrorResponse>({ erro: "Não entendi o áudio. Tente de novo." }, 422);
   }
   if (err instanceof VoiceProviderError) {
-    // Detalhe (status HTTP, corpo da resposta do provedor) só no log do servidor.
-    console.error(err, err.cause);
+    // Só o tipo do erro no log: a causa pode conter trechos da fala (dado sensível).
+    const causa = err.cause instanceof Error ? err.cause.name : typeof err.cause;
+    console.error(`voice: falha no provedor ${err.provider} (${causa})`);
     let erro: string;
     if (err.provider === "stt") {
       erro = "Não consegui transcrever o áudio agora. Tente de novo ou digite.";

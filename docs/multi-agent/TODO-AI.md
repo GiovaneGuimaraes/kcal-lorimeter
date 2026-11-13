@@ -11,28 +11,8 @@
 
 ## Fila
 
-### T-011 — `voice-core` + rota de upload: áudio → transcrição → extração → casamento
-- **Status**: EM_ANDAMENTO · **Complexidade**: alta · **Depende de**: T-006, T-009, T-010
-- **Objetivo**: `packages/voice-core` (`@kcal/voice-core`): `processVoice({db, transcriber,
-  extractor}, userId, audio)` → transcreve, extrai itens, casa cada item com `matchFood`, grava
-  `voice_logs` (transcricao, extracao_json, status `pendente`) e devolve `VoiceReview = {
-  voiceLogId, transcricao, itens: [{ extraido, match: MatchFoodResult, gramas?: number }] }`
-  (gramas calculados quando houve `exact` e a unidade resolve; senão ausente). Também
-  `processText(deps, userId, texto)` (mesmo fluxo sem STT, origem `texto`) e
-  `discardVoiceLog(db, userId, id)`. O áudio **não** é gravado em disco nem no banco. Rotas:
-  `POST /voice` (multipart `audio`, máx. 5 MB, 60 s não verificável aqui), `POST /voice/text`
-  (`{texto}`), `POST /voice/:id/discard`. `server.ts` monta `createOpenAiTranscriber` e
-  `createItemExtractor` a partir do env; sem chave → rota devolve 503 `{erro}` claro.
-- **Propósito**: é o F5; a tela de revisão (T-013) consome `VoiceReview` e confirma via T-008.
-- **Fora de escopo**: confirmar lançamentos (T-008 cria com `voiceLogId`), UI, retry/fila.
-- **Critério de aceite**: `pnpm --filter @kcal/voice-core test` e `rest-api test` verdes com
-  STT/LLM **fakes injetados**: frase com 3 itens → 3 itens com match (exact/candidates/none
-  conforme o seed); transcrição vazia → erro 422; `voice_log` salvo com `user_id` certo;
-  discard de outro usuário → 404; `POST /voice` sem chave → 503; nenhum arquivo em disco.
-- **Verificação**: 1.
-
 ### T-012 — App: login, cliente da API e gravar áudio
-- **Status**: PENDENTE · **Complexidade**: alta · **Depende de**: T-005, T-011
+- **Status**: EM_ANDAMENTO · **Complexidade**: alta · **Depende de**: T-005, T-011
 - **Objetivo**: em `packages/mobile`: cliente HTTP (`src/api/client.ts`, base URL de
   `EXPO_PUBLIC_API_URL`, token em `expo-secure-store`, erros `{erro}` → mensagem), telas Expo
   Router `login` e `cadastro` (pt-BR, validação com os schemas do `@kcal/shared`), gate de
