@@ -201,6 +201,30 @@ importers:
 
   packages/stt: {}
 
+  packages/voice-core:
+    dependencies:
+      '@kcal/db':
+        specifier: workspace:*
+        version: link:../db
+      '@kcal/foods-core':
+        specifier: workspace:*
+        version: link:../foods-core
+      '@kcal/llm':
+        specifier: workspace:*
+        version: link:../llm
+      '@kcal/nutrition-core':
+        specifier: workspace:*
+        version: link:../nutrition-core
+      '@kcal/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@kcal/stt':
+        specifier: workspace:*
+        version: link:../stt
+      drizzle-orm:
+        specifier: ^0.45.4
+        version: 0.45.4(@opentelemetry/api@1.10.0)(@types/better-sqlite3@9.6.0)(better-sqlite3@13.1.1)
+
 packages:
 
   2g@1.0.1:
